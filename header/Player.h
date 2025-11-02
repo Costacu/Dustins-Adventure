@@ -17,7 +17,7 @@ public:
         float y = 0.f;
     };
 
-    explicit Player(std::string name = "Dustin", int hp = 2, float speed = 1.0f, std::string texturePath_ = "../textures/Dustin.png");
+    explicit Player(std::string name = "Dustin", int hp = 2, float speed = 1.0f, std::string texturePath_ = "textures/Dustin.png");
     Player(const Player& other);
     Player& operator=(const Player& other);
     ~Player();
@@ -26,6 +26,8 @@ public:
     void update(float dt);
     void takeDamage(int dmg);
     void reset();
+
+    void draw(sf::RenderWindow& window) const;
 
     bool isAlive() const;
     const std::string& getName() const;

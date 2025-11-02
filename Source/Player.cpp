@@ -1,7 +1,7 @@
 #include "../header/Player.h"
-
-
 #include <iostream>
+#include <filesystem>
+using std::string;
 
 Player::Player(std::string name, int hp, float speed, std::string texturePath)
     : name_(std::move(name)), texturePath_(std::move(texturePath)), hp_(hp), maxHp_(hp), speed_(speed) {
@@ -92,13 +92,47 @@ void Player::move(float dx, float dy) {
 }
 
 void Player::loadTexture() {
-    texture_.loadFromFile(texturePath_);
+    namespace fs = std::filesystem;
+
+    const string name = texturePath_;                 // e.g. "Dustin.png" or "textures/Dustin.png"
+    std::vector<string> candidates;
+
+    candidates.push_back(name);                       // as provided
+    if (name.find('/') == string::npos && name.find('\\') == string::npos) {
+        candidates.push_back(string("textures/") + name);
+        candidates.push_back(string("../textures/") + name);
+    }
+#ifdef GAME_ASSETS_DIR
+    candidates.push_back((fs::path(GAME_ASSETS_DIR) / name).string());
+#endif
+
+    bool loaded = false;
+    for (const auto& p : candidates) {
+        if (texture_.loadFromFile(p)) { loaded = true; break; }
+    }
+    if (!loaded) {
+        sf::Image img; img.create(48, 48, sf::Color(200, 200, 255));
+        texture_.loadFromImage(img);
+    }
+
+    texture_.setSmooth(true);
     sprite_.setTexture(texture_);
+
+    auto sz = texture_.getSize();
+    const float W = 48.f, H = 48.f;
+    if (sz.x > 0 && sz.y > 0) {
+        sprite_.setScale(W / static_cast<float>(sz.x), H / static_cast<float>(sz.y));
+    }
+    sprite_.setPosition(pos_.x, pos_.y);
 }
 
 void Player::clampHp() {
     if (hp_ < 0) hp_ = 0;
     if (hp_ > maxHp_) hp_ = maxHp_;
+}
+
+void Player::draw(sf::RenderWindow& window) const {
+    window.draw(sprite_);
 }
 
 std::ostream& operator<<(std::ostream& os, const Player::Position& p) {

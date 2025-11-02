@@ -3,18 +3,17 @@
 #include "../header/GameEngine.h"
 #include <iostream>
 
-// GameEngine.cpp
 GameEngine::GameEngine(unsigned int width, unsigned int height, const std::string& title)
     : window_(sf::VideoMode(width, height), title),
       isRunning_(true),
       gameOver_(false),
       playerWon_(false),
-      player_("Dustin", 3, 220.f, "textures/Dustin.png"),
-      enemy_("Demogorgon", 2, 120.f, "textures/Demogorgon.png"),
-      map_({width, height})
-{
+      player_("Dustin", 3, 220.f, "Dustin.png"),
+      enemy_("Ghoul", 2, 120.f, "Demogorgon.png"),
+      map_({width, height}) {
     player_.setPosition(map_.getPlayerSpawn().x, map_.getPlayerSpawn().y);
     enemy_.setPosition(map_.getEnemySpawn().x, map_.getEnemySpawn().y);
+    setupUI();
 }
 
 GameEngine::~GameEngine() {}
@@ -41,14 +40,24 @@ void GameEngine::processEvents() {
                 isRunning_ = false;
             }
             if (e.key.code == sf::Keyboard::R) {
-                reset();
+                if (gameOver_) {
+                    reset();
+                }
             }
+        }
+        if (e.type == sf::Event::Resized) {
+            sf::View view = window_.getView();
+            view.setSize(static_cast<float>(e.size.width), static_cast<float>(e.size.height));
+            view.setCenter(static_cast<float>(e.size.width) * 0.5f, static_cast<float>(e.size.height) * 0.5f);
+            window_.setView(view);
+            overlay_.setSize(sf::Vector2f(static_cast<float>(e.size.width), static_cast<float>(e.size.height)));
         }
     }
 }
 
 void GameEngine::update(float dt) {
     if (gameOver_) return;
+
     player_.update(dt);
     enemy_.update(dt, sf::Vector2f(player_.getPosition().x, player_.getPosition().y), map_.getPlayArea());
 
@@ -71,20 +80,13 @@ void GameEngine::update(float dt) {
 void GameEngine::render() {
     window_.clear();
     map_.draw(window_);
+    player_.draw(window_);
+    enemy_.draw(window_);
 
-    sf::FloatRect pB = player_.getBounds();
-    sf::RectangleShape pShape;
-    pShape.setSize(sf::Vector2f(pB.width, pB.height));
-    pShape.setPosition(pB.left, pB.top);
-    pShape.setFillColor(sf::Color(200, 200, 255));
-    window_.draw(pShape);
-
-    sf::FloatRect eB = enemy_.getBounds();
-    sf::RectangleShape eShape;
-    eShape.setSize(sf::Vector2f(eB.width, eB.height));
-    eShape.setPosition(eB.left, eB.top);
-    eShape.setFillColor(sf::Color(255, 120, 120));
-    window_.draw(eShape);
+    if (gameOver_) {
+        window_.draw(overlay_);
+        window_.draw(uiText_);
+    }
 
     window_.display();
 }
@@ -104,6 +106,7 @@ void GameEngine::checkCollisions() {
     if (pB.intersects(eB)) {
         gameOver_ = true;
         playerWon_ = false;
+        updateOverlayText("You Died!", "Press R to retry");
     }
 }
 
@@ -111,5 +114,39 @@ void GameEngine::checkWinCondition() {
     if (map_.reachedDoor(player_.getBounds())) {
         gameOver_ = true;
         playerWon_ = true;
+        updateOverlayText("You Win!", "Press R to play again");
     }
 }
+
+void GameEngine::setupUI() {
+    overlay_.setSize(sf::Vector2f(static_cast<float>(window_.getSize().x), static_cast<float>(window_.getSize().y)));
+    overlay_.setFillColor(sf::Color(0, 0, 0, 150));
+
+    if (!uiFont_.loadFromFile("fonts/MomoTrustDisplay-Regular.ttf")) {
+        uiFont_.loadFromFile("../fonts/MomoTrustDisplay-Regular.ttf");
+    }
+
+    uiText_.setFont(uiFont_);
+    uiText_.setCharacterSize(36);
+    uiText_.setFillColor(sf::Color::White);
+    uiText_.setOutlineColor(sf::Color::Black);
+    uiText_.setOutlineThickness(2.f);
+    uiText_.setString("Press R to retry");
+
+    sf::FloatRect bounds = uiText_.getLocalBounds();
+    uiText_.setOrigin(bounds.left + bounds.width / 2.f, bounds.top + bounds.height / 2.f);
+    uiText_.setPosition(static_cast<float>(window_.getSize().x) / 2.f, static_cast<float>(window_.getSize().y) / 2.f);
+
+}
+
+void GameEngine::updateOverlayText(const std::string& titleLine, const std::string& hintLine) {
+    std::string msg = titleLine + "\n" + hintLine;
+    uiText_.setString(msg);
+
+    sf::FloatRect bounds = uiText_.getLocalBounds();
+
+    uiText_.setOrigin(bounds.left + bounds.width / 2.f, bounds.top + bounds.height / 2.f);
+
+    uiText_.setPosition(static_cast<float>(window_.getSize().x) / 2.f, static_cast<float>(window_.getSize().y) / 2.f);
+}
+
