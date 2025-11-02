@@ -14,7 +14,7 @@ public:
         float y = 0.f;
     };
 
-    explicit Enemy(std::string name = "Ghoul", int hp = 2, float speed = 100.f, std::string texturePath = "../textures/Demogorgon.png");
+    explicit Enemy(std::string name = "Ghoul", int hp = 2, float speed = 100.f, std::string texturePath_ = "../textures/Demogorgon.png");
     Enemy(const Enemy& other);
     Enemy& operator=(const Enemy& other);
     ~Enemy();
