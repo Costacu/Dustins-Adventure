@@ -62,6 +62,10 @@ runs:
           --inline-suppr \
           --error-exitcode=1 \
           --template=gcc \
+          --platform=unix64 -D__linux__ -Dlinux \
           --suppress=missingIncludeSystem \
           --suppress=checkersReport \
-          --quiet
+          --suppress=normalCheckLevelMaxBranches \
+          -i build/_deps \
+          .
+
