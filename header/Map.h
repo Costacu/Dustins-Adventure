@@ -3,7 +3,6 @@
 #define MAP_H
 #include <SFML/Graphics.hpp>
 
-
 class Map {
 public:
     explicit Map(sf::Vector2u windowSize = {800, 600});
@@ -33,6 +32,5 @@ private:
     sf::Vector2f enemySpawn_;
     sf::RectangleShape background_;
 };
-
 
 #endif //MAP_H

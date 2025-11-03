@@ -42,7 +42,6 @@ private:
 
     std::vector<Decoy> decoys_;
     float decoyLifetime_ = 3.0f;
-    float decoyThrowSpeed_ = 420.f;
 
     void throwDecoy();
 };
