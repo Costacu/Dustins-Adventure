@@ -41,7 +41,7 @@ Enemy& Enemy::operator=(const Enemy& other) {
     return *this;
 }
 
-Enemy::~Enemy() {}
+Enemy::~Enemy() = default;
 
 void Enemy::update(float dt, const sf::Vector2f& playerPos, const sf::FloatRect& playArea) {
     if (distracted_) {

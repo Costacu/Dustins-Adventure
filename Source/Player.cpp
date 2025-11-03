@@ -36,11 +36,11 @@ Player& Player::operator=(const Player& other) {
     return *this;
 }
 
-Player::~Player() {}
+Player::~Player() = default;
 
 void Player::input() {}
 
-void Player::update(float dt) {
+void Player::update(const float dt) {
     float dx = 0.f, dy = 0.f;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) dx -= speed_ * dt;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) dx += speed_ * dt;

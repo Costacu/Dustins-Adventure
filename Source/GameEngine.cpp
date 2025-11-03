@@ -1,6 +1,4 @@
 #include "../header/GameEngine.h"
-
-#include "../header/GameEngine.h"
 #include <iostream>
 #include <cmath>
 
@@ -17,7 +15,7 @@ GameEngine::GameEngine(unsigned int width, unsigned int height, const std::strin
     setupUI();
 }
 
-GameEngine::~GameEngine() {}
+GameEngine::~GameEngine() = default;
 
 void GameEngine::run() {
     while (isRunning_ && window_.isOpen()) {
@@ -29,7 +27,7 @@ void GameEngine::run() {
 }
 
 void GameEngine::processEvents() {
-    sf::Event e;
+    sf::Event e{};
     while (window_.pollEvent(e)) {
         if (e.type == sf::Event::KeyPressed) {
             if (e.key.code == sf::Keyboard::Space && !gameOver_) {

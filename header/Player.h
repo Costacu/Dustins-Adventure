@@ -1,14 +1,9 @@
+#pragma once
 #ifndef PLAYER_H
 #define PLAYER_H
-#include <iostream>
 #include <string>
 #include <SFML/Graphics.hpp>
-
-
-#pragma once
-#include <string>
 #include <iosfwd>
-#include <SFML/Graphics.hpp>
 
 class Player {
 public:
@@ -22,7 +17,7 @@ public:
     Player& operator=(const Player& other);
     ~Player();
 
-    void input();
+    static void input();
     void update(float dt);
     void takeDamage(int dmg);
     void reset();
