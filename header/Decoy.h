@@ -1,6 +1,3 @@
-//
-// Created by stefa on 11/3/2025.
-//
 #pragma once
 #ifndef DECOY_H
 #define DECOY_H

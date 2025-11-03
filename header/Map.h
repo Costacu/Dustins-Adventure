@@ -1,6 +1,3 @@
-//
-// Created by stefa on 11/2/2025.
-//
 #pragma once
 #ifndef MAP_H
 #define MAP_H
