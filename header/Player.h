@@ -35,7 +35,6 @@ public:
 
 private:
     void loadTexture();
-    void clampHp();
 
     std::string name_;
     std::string texturePath_;

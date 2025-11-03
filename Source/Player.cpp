@@ -118,10 +118,6 @@ void Player::loadTexture() {
     sprite_.setPosition(pos_.x, pos_.y);
 }
 
-void Player::clampHp() {
-    if (hp_ < 0) hp_ = 0;
-    if (hp_ > maxHp_) hp_ = maxHp_;
-}
 
 void Player::draw(sf::RenderWindow& window) const {
     window.draw(sprite_);

@@ -150,11 +150,6 @@ void Enemy::loadTexture() {
     sprite_.setPosition(pos_.x, pos_.y);
 }
 
-void Enemy::clampHp() {
-    if (hp_ < 0) hp_ = 0;
-    if (hp_ > maxHp_) hp_ = maxHp_;
-}
-
 
 void Enemy::distractTo(const sf::Vector2f& pos, float seconds) {
     distractPos_ = pos;
