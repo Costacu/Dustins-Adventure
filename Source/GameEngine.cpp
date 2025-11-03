@@ -182,17 +182,11 @@ void GameEngine::updateOverlayText(const std::string& titleLine, const std::stri
 
 
 void GameEngine::throwDecoy() {
-    sf::Vector2f start(player_.getPosition().getX() + player_.getBounds().width * 0.5f,
-                       player_.getPosition().getY() + player_.getBounds().height * 0.5f);
-
-    sf::Vector2i mousePixels = sf::Mouse::getPosition(window_);
-    sf::Vector2f mouseWorld = window_.mapPixelToCoords(mousePixels);
-
-    sf::Vector2f dir = mouseWorld - start;
-    float len = std::sqrt(dir.x*dir.x + dir.y*dir.y);
-    if (len > 0.f) { dir.x /= len; dir.y /= len; } else { dir = {1.f, 0.f}; }
+    sf::FloatRect bounds = player_.getBounds();
+    sf::Vector2f center(bounds.left + bounds.width / 2.f,
+                        bounds.top + bounds.height / 2.f);
 
     Decoy d;
-    d.spawn(start, dir, decoyThrowSpeed_, decoyLifetime_);
+    d.spawn(center, decoyLifetime_);
     decoys_.push_back(d);
 }
