@@ -1,6 +1,8 @@
 #include "../header/Player.h"
 #include <iostream>
 #include <filesystem>
+#include <vector>
+#include <algorithm>  // any_of / find_if
 using std::string;
 
 Player::Player(std::string name, int hp, float speed, std::string texturePath)
@@ -81,18 +83,18 @@ void Player::loadTexture() {
 
     const string name = texturePath_;
     std::vector<string> candidates;
-
     candidates.push_back(name);
     if (name.find('/') == string::npos && name.find('\\') == string::npos) {
         candidates.push_back(string("textures/") + name);
         candidates.push_back(string("../textures/") + name);
     }
 
+    // Use STL algorithm instead of a raw loop (matches cppcheck suggestion)
+    const bool loaded = std::any_of(candidates.begin(), candidates.end(),
+        [this](const std::string& p) {
+            return texture_.loadFromFile(p);
+        });
 
-    bool loaded = false;
-    for (const auto& p : candidates) {
-        if (texture_.loadFromFile(p)) { loaded = true; break; }
-    }
     if (!loaded) {
         sf::Image img; img.create(48, 48, sf::Color(200, 200, 255));
         texture_.loadFromImage(img);
