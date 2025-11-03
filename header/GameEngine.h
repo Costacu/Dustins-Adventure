@@ -8,7 +8,7 @@
 
 class GameEngine {
 public:
-    explicit GameEngine(unsigned int width = 1280, unsigned int height = 720, const std::string& title = "The Curse of Transylvania");
+    explicit GameEngine(unsigned int width = 1280, unsigned int height = 720, const std::string& title = "Dustin's Adventure");
     ~GameEngine();
 
     void run();
