@@ -38,8 +38,6 @@ Player& Player::operator=(const Player& other) {
 
 Player::~Player() = default;
 
-void Player::input() {}
-
 void Player::update(const float dt) {
     float dx = 0.f, dy = 0.f;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) dx -= speed_ * dt;
@@ -49,11 +47,6 @@ void Player::update(const float dt) {
     move(dx, dy);
 }
 
-void Player::takeDamage(int dmg) {
-    if (dmg < 0) dmg = 0;
-    hp_ -= dmg;
-    clampHp();
-}
 
 void Player::reset() {
     hp_ = maxHp_;
@@ -62,7 +55,6 @@ void Player::reset() {
     sprite_.setPosition(pos_.x, pos_.y);
 }
 
-bool Player::isAlive() const { return hp_ > 0; }
 const std::string& Player::getName() const { return name_; }
 const std::string& Player::getTexturePath() const { return texturePath_; }
 int Player::getHp() const { return hp_; }

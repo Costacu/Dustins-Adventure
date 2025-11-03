@@ -168,5 +168,3 @@ void Enemy::distractTo(const sf::Vector2f& pos, float seconds) {
     distractTimer_ = seconds;
     distracted_ = (seconds > 0.f);
 }
-
-bool Enemy::isDistracted() const { return distracted_; }

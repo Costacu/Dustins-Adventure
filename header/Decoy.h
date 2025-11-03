@@ -35,7 +35,6 @@ public:
 
     bool active() const { return lifetime_ > 0.f; }
     const sf::Vector2f& position() const { return pos_; }
-    float timeLeft() const { return lifetime_; }
     void draw(sf::RenderWindow& w) const { if (active()) w.draw(shape_); }
 
 private:

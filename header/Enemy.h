@@ -38,7 +38,6 @@ public:
 
 
     void distractTo(const sf::Vector2f& pos, float seconds);
-    bool isDistracted() const;
 
 private:
     void loadTexture();

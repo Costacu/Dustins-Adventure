@@ -17,14 +17,11 @@ public:
     Player& operator=(const Player& other);
     ~Player();
 
-    static void input();
     void update(float dt);
-    void takeDamage(int dmg);
     void reset();
 
     void draw(sf::RenderWindow& window) const;
 
-    bool isAlive() const;
     const std::string& getName() const;
     const std::string& getTexturePath() const;
     int getHp() const;
