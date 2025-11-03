@@ -9,6 +9,11 @@ Enemy::Enemy(std::string name, int hp, float speed, std::string texturePath)
     pos_.y = 0.f;
     loadTexture();
     sprite_.setPosition(pos_.x, pos_.y);
+
+    distracted_ = false;
+    distractTimer_ = 0.f;
+    distractPos_ = sf::Vector2f(0.f,0.f);
+
 }
 
 Enemy::Enemy(const Enemy& other)
@@ -39,8 +44,17 @@ Enemy& Enemy::operator=(const Enemy& other) {
 Enemy::~Enemy() {}
 
 void Enemy::update(float dt, const sf::Vector2f& playerPos, const sf::FloatRect& playArea) {
-    float dx = playerPos.x - pos_.x;
-    float dy = playerPos.y - pos_.y;
+    if (distracted_) {
+        distractTimer_ -= dt;
+        if (distractTimer_ <= 0.f) {
+            distracted_ = false;
+        }
+    }
+
+    sf::Vector2f target = distracted_ ? distractPos_ : playerPos;
+
+    float dx = target.x - pos_.x;
+    float dy = target.y - pos_.y;
     float len = std::sqrt(dx * dx + dy * dy);
     if (len > 0.f) {
         dx /= len;
@@ -48,11 +62,18 @@ void Enemy::update(float dt, const sf::Vector2f& playerPos, const sf::FloatRect&
         pos_.x += dx * speed_ * dt;
         pos_.y += dy * speed_ * dt;
     }
+
+    if (distracted_ && len < 8.f) {
+        distracted_ = false;
+        distractTimer_ = 0.f;
+    }
+
     sf::FloatRect b = sprite_.getGlobalBounds();
     if (pos_.x < playArea.left) pos_.x = playArea.left;
     if (pos_.y < playArea.top) pos_.y = playArea.top;
     if (pos_.x + b.width > playArea.left + playArea.width) pos_.x = playArea.left + playArea.width - b.width;
     if (pos_.y + b.height > playArea.top + playArea.height) pos_.y = playArea.top + playArea.height - b.height;
+
     sprite_.setPosition(pos_.x, pos_.y);
 }
 
@@ -113,9 +134,7 @@ void Enemy::loadTexture() {
         candidates.push_back(string("textures/") + name);
         candidates.push_back(string("../textures/") + name);
     }
-#ifdef GAME_ASSETS_DIR
-    candidates.push_back((fs::path(GAME_ASSETS_DIR) / name).string());
-#endif
+
 
     bool loaded = false;
     for (const auto& p : candidates) {
@@ -142,3 +161,12 @@ void Enemy::clampHp() {
     if (hp_ < 0) hp_ = 0;
     if (hp_ > maxHp_) hp_ = maxHp_;
 }
+
+
+void Enemy::distractTo(const sf::Vector2f& pos, float seconds) {
+    distractPos_ = pos;
+    distractTimer_ = seconds;
+    distracted_ = (seconds > 0.f);
+}
+
+bool Enemy::isDistracted() const { return distracted_; }

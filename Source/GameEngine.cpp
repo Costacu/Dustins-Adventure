@@ -2,6 +2,7 @@
 
 #include "../header/GameEngine.h"
 #include <iostream>
+#include <cmath>
 
 GameEngine::GameEngine(unsigned int width, unsigned int height, const std::string& title)
     : window_(sf::VideoMode(width, height), title),
@@ -30,6 +31,12 @@ void GameEngine::run() {
 void GameEngine::processEvents() {
     sf::Event e;
     while (window_.pollEvent(e)) {
+        if (e.type == sf::Event::KeyPressed) {
+            if (e.key.code == sf::Keyboard::Space && !gameOver_) {
+                throwDecoy();
+            }
+        }
+
         if (e.type == sf::Event::Closed) {
             window_.close();
             isRunning_ = false;
@@ -63,7 +70,6 @@ void GameEngine::update(float dt) {
 
     sf::FloatRect pB = player_.getBounds();
     sf::FloatRect eB = enemy_.getBounds();
-
     sf::Vector2f pSize(pB.width, pB.height);
     sf::Vector2f eSize(eB.width, eB.height);
 
@@ -73,29 +79,49 @@ void GameEngine::update(float dt) {
     player_.setPosition(pClamped.x, pClamped.y);
     enemy_.setPosition(eClamped.x, eClamped.y);
 
+    for (auto& d : decoys_) d.update(dt, map_.getPlayArea());
+
+    decoys_.erase(std::remove_if(decoys_.begin(), decoys_.end(),
+        [](const Decoy& d){ return !d.active(); }), decoys_.end());
+
+    if (!decoys_.empty()) {
+        float bestDist2 = std::numeric_limits<float>::max();
+        sf::Vector2f bestPos = decoys_.front().position();
+        for (auto& d : decoys_) {
+            if (!d.active()) continue;
+            sf::Vector2f dp = d.position() - sf::Vector2f(enemy_.getPosition().x, enemy_.getPosition().y);
+            float dist2 = dp.x * dp.x + dp.y * dp.y;
+            if (dist2 < bestDist2) { bestDist2 = dist2; bestPos = d.position(); }
+        }
+        enemy_.distractTo(bestPos, 0.2f);
+    }
+
     checkCollisions();
     checkWinCondition();
 }
 
+
 void GameEngine::render() {
     window_.clear();
     map_.draw(window_);
+    for (auto& d : decoys_) d.draw(window_);
     player_.draw(window_);
     enemy_.draw(window_);
-
     if (gameOver_) {
         window_.draw(overlay_);
         window_.draw(uiText_);
+        window_.draw(uiText_);
     }
-
     window_.display();
 }
+
 
 void GameEngine::reset() {
     gameOver_ = false;
     playerWon_ = false;
     player_.reset();
     enemy_.reset();
+    decoys_.clear();
     player_.setPosition(map_.getPlayerSpawn().x, map_.getPlayerSpawn().y);
     enemy_.setPosition(map_.getEnemySpawn().x, map_.getEnemySpawn().y);
 }
@@ -150,3 +176,20 @@ void GameEngine::updateOverlayText(const std::string& titleLine, const std::stri
     uiText_.setPosition(static_cast<float>(window_.getSize().x) / 2.f, static_cast<float>(window_.getSize().y) / 2.f);
 }
 
+
+
+void GameEngine::throwDecoy() {
+    sf::Vector2f start(player_.getPosition().x + player_.getBounds().width * 0.5f,
+                       player_.getPosition().y + player_.getBounds().height * 0.5f);
+
+    sf::Vector2i mousePixels = sf::Mouse::getPosition(window_);
+    sf::Vector2f mouseWorld = window_.mapPixelToCoords(mousePixels);
+
+    sf::Vector2f dir = mouseWorld - start;
+    float len = std::sqrt(dir.x*dir.x + dir.y*dir.y);
+    if (len > 0.f) { dir.x /= len; dir.y /= len; } else { dir = {1.f, 0.f}; }
+
+    Decoy d;
+    d.spawn(start, dir, decoyThrowSpeed_, decoyLifetime_);
+    decoys_.push_back(d);
+}

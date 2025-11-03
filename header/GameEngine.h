@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "Enemy.h"
 #include "Map.h"
+#include "Decoy.h"
 
 class GameEngine {
 public:
@@ -37,4 +38,11 @@ private:
     sf::Font uiFont_;
     sf::Text uiText_;
     sf::RectangleShape overlay_;
+
+
+    std::vector<Decoy> decoys_;
+    float decoyLifetime_ = 3.0f;
+    float decoyThrowSpeed_ = 420.f;
+
+    void throwDecoy();
 };

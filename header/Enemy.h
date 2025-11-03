@@ -36,6 +36,10 @@ public:
     void move(float dx, float dy);
     void draw(sf::RenderWindow& window) const;
 
+
+    void distractTo(const sf::Vector2f& pos, float seconds);
+    bool isDistracted() const;
+
 private:
     void loadTexture();
     void clampHp();
@@ -48,6 +52,11 @@ private:
     Position pos_;
     sf::Texture texture_;
     sf::Sprite sprite_;
+
+
+    bool distracted_ = false;
+    float distractTimer_ = 0.f;
+    sf::Vector2f distractPos_;
 };
 
 

@@ -10,7 +10,7 @@ Map::Map(sf::Vector2u windowSize)
     doorShape_.setFillColor(sf::Color::Red);
     doorShape_.setPosition(windowSize_.x - 80.f, windowSize_.y / 2.f - 60.f);
     playerSpawn_ = sf::Vector2f(80.f, windowSize_.y / 2.f);
-    enemySpawn_ = sf::Vector2f(200.f, windowSize_.y / 2.f);
+    enemySpawn_ = sf::Vector2f(500.f, windowSize_.y / 2.f);
 }
 
 Map::~Map() {}

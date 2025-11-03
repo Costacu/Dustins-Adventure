@@ -62,6 +62,7 @@ add_executable(${PROJECT_NAME}
         header/Map.h
         Source/GameEngine.cpp
         header/GameEngine.h
+        header/decoy.h
 )
 
 include(cmake/CompilerFlags.cmake)
