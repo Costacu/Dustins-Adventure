@@ -79,17 +79,15 @@ void Player::move(float dx, float dy) {
 void Player::loadTexture() {
     namespace fs = std::filesystem;
 
-    const string name = texturePath_;                 // e.g. "Dustin.png" or "textures/Dustin.png"
+    const string name = texturePath_;
     std::vector<string> candidates;
 
-    candidates.push_back(name);                       // as provided
+    candidates.push_back(name);
     if (name.find('/') == string::npos && name.find('\\') == string::npos) {
         candidates.push_back(string("textures/") + name);
         candidates.push_back(string("../textures/") + name);
     }
-#ifdef GAME_ASSETS_DIR
-    candidates.push_back((fs::path(GAME_ASSETS_DIR) / name).string());
-#endif
+
 
     bool loaded = false;
     for (const auto& p : candidates) {
