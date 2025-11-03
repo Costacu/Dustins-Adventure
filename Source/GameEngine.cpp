@@ -64,15 +64,19 @@ void GameEngine::update(float dt) {
     if (gameOver_) return;
 
     player_.update(dt);
-    enemy_.update(dt, sf::Vector2f(player_.getPosition().x, player_.getPosition().y), map_.getPlayArea());
+    enemy_.update(dt,
+                  sf::Vector2f(player_.getPosition().getX(), player_.getPosition().getY()),
+                  map_.getPlayArea());
 
     sf::FloatRect pB = player_.getBounds();
     sf::FloatRect eB = enemy_.getBounds();
     sf::Vector2f pSize(pB.width, pB.height);
     sf::Vector2f eSize(eB.width, eB.height);
 
-    sf::Vector2f pClamped = map_.clampPosition(sf::Vector2f(player_.getPosition().x, player_.getPosition().y), pSize);
-    sf::Vector2f eClamped = map_.clampPosition(sf::Vector2f(enemy_.getPosition().x, enemy_.getPosition().y), eSize);
+    sf::Vector2f pClamped = map_.clampPosition(
+        sf::Vector2f(player_.getPosition().getX(), player_.getPosition().getY()), pSize);
+    sf::Vector2f eClamped = map_.clampPosition(
+        sf::Vector2f(enemy_.getPosition().getX(), enemy_.getPosition().getY()), eSize);
 
     player_.setPosition(pClamped.x, pClamped.y);
     enemy_.setPosition(eClamped.x, eClamped.y);
@@ -87,7 +91,8 @@ void GameEngine::update(float dt) {
         sf::Vector2f bestPos = decoys_.front().position();
         for (const auto& d : decoys_) {
             if (!d.active()) continue;
-            sf::Vector2f dp = d.position() - sf::Vector2f(enemy_.getPosition().x, enemy_.getPosition().y);
+            sf::Vector2f dp = d.position() -
+                              sf::Vector2f(enemy_.getPosition().getX(), enemy_.getPosition().getY());
             float dist2 = dp.x * dp.x + dp.y * dp.y;
             if (dist2 < bestDist2) { bestDist2 = dist2; bestPos = d.position(); }
         }
@@ -177,8 +182,8 @@ void GameEngine::updateOverlayText(const std::string& titleLine, const std::stri
 
 
 void GameEngine::throwDecoy() {
-    sf::Vector2f start(player_.getPosition().x + player_.getBounds().width * 0.5f,
-                       player_.getPosition().y + player_.getBounds().height * 0.5f);
+    sf::Vector2f start(player_.getPosition().getX() + player_.getBounds().width * 0.5f,
+                       player_.getPosition().getY() + player_.getBounds().height * 0.5f);
 
     sf::Vector2i mousePixels = sf::Mouse::getPosition(window_);
     sf::Vector2f mouseWorld = window_.mapPixelToCoords(mousePixels);

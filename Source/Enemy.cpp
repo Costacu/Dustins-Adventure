@@ -5,10 +5,9 @@ using std::string;
 
 Enemy::Enemy(std::string name, int hp, float speed, std::string texturePath)
     : name_(std::move(name)), texturePath_(std::move(texturePath)), hp_(hp), maxHp_(hp), speed_(speed) {
-    pos_.x = 0.f;
-    pos_.y = 0.f;
+    pos_.set(0.f, 0.f);
     loadTexture();
-    sprite_.setPosition(pos_.x, pos_.y);
+    sprite_.setPosition(pos_.getX(), pos_.getY());
 
     distracted_ = false;
     distractTimer_ = 0.f;
@@ -24,7 +23,7 @@ Enemy::Enemy(const Enemy& other)
       speed_(other.speed_),
       pos_(other.pos_) {
     loadTexture();
-    sprite_.setPosition(pos_.x, pos_.y);
+    sprite_.setPosition(pos_.getX(), pos_.getY());
 }
 
 Enemy& Enemy::operator=(const Enemy& other) {
@@ -36,7 +35,7 @@ Enemy& Enemy::operator=(const Enemy& other) {
         speed_ = other.speed_;
         pos_ = other.pos_;
         loadTexture();
-        sprite_.setPosition(pos_.x, pos_.y);
+        sprite_.setPosition(pos_.getX(), pos_.getY());
         distractTimer_ = other.distractTimer_;
     }
     return *this;
@@ -54,14 +53,13 @@ void Enemy::update(float dt, const sf::Vector2f& playerPos, const sf::FloatRect&
 
     sf::Vector2f target = distracted_ ? distractPos_ : playerPos;
 
-    float dx = target.x - pos_.x;
-    float dy = target.y - pos_.y;
+    float dx = target.x - pos_.getX();
+    float dy = target.y - pos_.getY();
     float len = std::sqrt(dx * dx + dy * dy);
     if (len > 0.f) {
         dx /= len;
         dy /= len;
-        pos_.x += dx * speed_ * dt;
-        pos_.y += dy * speed_ * dt;
+        pos_.set(pos_.getX() + dx * speed_ * dt, pos_.getY() + dy * speed_ * dt);
     }
 
     if (distracted_ && len < 8.f) {
@@ -70,19 +68,18 @@ void Enemy::update(float dt, const sf::Vector2f& playerPos, const sf::FloatRect&
     }
 
     sf::FloatRect b = sprite_.getGlobalBounds();
-    if (pos_.x < playArea.left) pos_.x = playArea.left;
-    if (pos_.y < playArea.top) pos_.y = playArea.top;
-    if (pos_.x + b.width > playArea.left + playArea.width) pos_.x = playArea.left + playArea.width - b.width;
-    if (pos_.y + b.height > playArea.top + playArea.height) pos_.y = playArea.top + playArea.height - b.height;
+    if (pos_.getX() < playArea.left) pos_.setX(playArea.left);
+    if (pos_.getY() < playArea.top) pos_.setY(playArea.top);
+    if (pos_.getX() + b.width > playArea.left + playArea.width) pos_.setX(playArea.left + playArea.width - b.width);
+    if (pos_.getY() + b.height > playArea.top + playArea.height) pos_.setY(playArea.top + playArea.height - b.height);
 
-    sprite_.setPosition(pos_.x, pos_.y);
+    sprite_.setPosition(pos_.getX(), pos_.getY());
 }
 
 void Enemy::reset() {
     hp_ = maxHp_;
-    pos_.x = 0.f;
-    pos_.y = 0.f;
-    sprite_.setPosition(pos_.x, pos_.y);
+    pos_.set(0.f, 0.f);
+    sprite_.setPosition(pos_.getX(), pos_.getY());
 }
 
 const std::string& Enemy::getName() const { return name_; }
@@ -95,21 +92,19 @@ const Enemy::Position& Enemy::getPosition() const { return pos_; }
 sf::FloatRect Enemy::getBounds() const {
     sf::FloatRect b = sprite_.getGlobalBounds();
     if (b.width <= 0.f || b.height <= 0.f)
-        return sf::FloatRect(pos_.x, pos_.y, 48.f, 48.f);
+        return sf::FloatRect(pos_.getX(), pos_.getY(), 48.f, 48.f);
     return b;
 }
 
 
 void Enemy::setPosition(float newX, float newY) {
-    pos_.x = newX;
-    pos_.y = newY;
-    sprite_.setPosition(pos_.x, pos_.y);
+    pos_.set(newX, newY);
+    sprite_.setPosition(pos_.getX(), pos_.getY());
 }
 
 void Enemy::move(float dx, float dy) {
-    pos_.x += dx;
-    pos_.y += dy;
-    sprite_.setPosition(pos_.x, pos_.y);
+    pos_.translate(dx, dy);
+    sprite_.setPosition(pos_.getX(), pos_.getY());
 }
 
 void Enemy::draw(sf::RenderWindow& window) const {
@@ -119,10 +114,10 @@ void Enemy::draw(sf::RenderWindow& window) const {
 void Enemy::loadTexture() {
     namespace fs = std::filesystem;
 
-    const string name = texturePath_;                 // e.g. "Demogorgon.png" or "textures/Demogorgon.png"
+    const string name = texturePath_;
     std::vector<string> candidates;
 
-    candidates.push_back(name);                       // as provided
+    candidates.push_back(name);
     if (name.find('/') == string::npos && name.find('\\') == string::npos) {
         candidates.push_back(string("textures/") + name);
         candidates.push_back(string("../textures/") + name);
@@ -147,7 +142,7 @@ void Enemy::loadTexture() {
     if (sz.x > 0 && sz.y > 0) {
         sprite_.setScale(W / static_cast<float>(sz.x), H / static_cast<float>(sz.y));
     }
-    sprite_.setPosition(pos_.x, pos_.y);
+    sprite_.setPosition(pos_.getX(), pos_.getY());
 }
 
 

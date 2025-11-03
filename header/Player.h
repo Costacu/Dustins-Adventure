@@ -8,8 +8,19 @@
 class Player {
 public:
     struct Position {
+    private:
         float x = 0.f;
         float y = 0.f;
+
+    public:
+        Position() = default;
+        Position(float x, float y) : x(x), y(y) {}
+
+        float getX() const { return x; }
+        float getY() const { return y; }
+        void setX(float newX) { x = newX; }
+        void setY(float newY) { y = newY; }
+        void set(float newX, float newY) { x = newX; y = newY; }
     };
 
     explicit Player(std::string name = "Dustin", int hp = 2, float speed = 1.0f, std::string texturePath_ = "textures/Dustin.png");
@@ -49,7 +60,4 @@ private:
 std::ostream& operator<<(std::ostream& os, const Player::Position& p);
 std::ostream& operator<<(std::ostream& os, const Player& pl);
 
-
-
-
-#endif //PLAYER_H
+#endif // PLAYER_H
