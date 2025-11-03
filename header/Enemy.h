@@ -19,11 +19,8 @@ public:
     Enemy& operator=(const Enemy& other);
     ~Enemy();
 
-    void update(float dt, const sf::Vector2f& playerPos, const sf::FloatRect& playArea);
-    void takeDamage(int dmg);
-    void reset();
+    void update(float dt, const sf::Vector2f& playerPos, const sf::FloatRect& playArea);void reset();
 
-    bool isAlive() const;
     const std::string& getName() const;
     const std::string& getTexturePath() const;
     int getHp() const;

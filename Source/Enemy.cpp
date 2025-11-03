@@ -37,6 +37,7 @@ Enemy& Enemy::operator=(const Enemy& other) {
         pos_ = other.pos_;
         loadTexture();
         sprite_.setPosition(pos_.x, pos_.y);
+        distractTimer_ = other.distractTimer_;
     }
     return *this;
 }
@@ -77,12 +78,6 @@ void Enemy::update(float dt, const sf::Vector2f& playerPos, const sf::FloatRect&
     sprite_.setPosition(pos_.x, pos_.y);
 }
 
-void Enemy::takeDamage(int dmg) {
-    if (dmg < 0) dmg = 0;
-    hp_ -= dmg;
-    clampHp();
-}
-
 void Enemy::reset() {
     hp_ = maxHp_;
     pos_.x = 0.f;
@@ -90,7 +85,6 @@ void Enemy::reset() {
     sprite_.setPosition(pos_.x, pos_.y);
 }
 
-bool Enemy::isAlive() const { return hp_ > 0; }
 const std::string& Enemy::getName() const { return name_; }
 const std::string& Enemy::getTexturePath() const { return texturePath_; }
 int Enemy::getHp() const { return hp_; }
@@ -98,7 +92,6 @@ int Enemy::getMaxHp() const { return maxHp_; }
 float Enemy::getSpeed() const { return speed_; }
 const Enemy::Position& Enemy::getPosition() const { return pos_; }
 
-// Enemy.cpp
 sf::FloatRect Enemy::getBounds() const {
     sf::FloatRect b = sprite_.getGlobalBounds();
     if (b.width <= 0.f || b.height <= 0.f)

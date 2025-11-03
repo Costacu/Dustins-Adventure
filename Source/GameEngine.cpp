@@ -85,7 +85,7 @@ void GameEngine::update(float dt) {
     if (!decoys_.empty()) {
         float bestDist2 = std::numeric_limits<float>::max();
         sf::Vector2f bestPos = decoys_.front().position();
-        for (auto& d : decoys_) {
+        for (const auto& d : decoys_) {
             if (!d.active()) continue;
             sf::Vector2f dp = d.position() - sf::Vector2f(enemy_.getPosition().x, enemy_.getPosition().y);
             float dist2 = dp.x * dp.x + dp.y * dp.y;
@@ -102,7 +102,7 @@ void GameEngine::update(float dt) {
 void GameEngine::render() {
     window_.clear();
     map_.draw(window_);
-    for (auto& d : decoys_) d.draw(window_);
+    for (const auto& d : decoys_) d.draw(window_);
     player_.draw(window_);
     enemy_.draw(window_);
     if (gameOver_) {
