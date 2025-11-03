@@ -1,15 +1,12 @@
-name: Run cppcheck
-description: Install and run cppcheck with suppressed checkersReport
+name: 'Run cppcheck'
+description: 'Install and run cppcheck'
 
 runs:
-  using: composite
+  using: "composite"
   steps:
-    - name: Install Linux Dependencies
-      if: runner.os == 'Linux'
-      uses: ./.github/actions/install-linux-deps
-
     - name: Cache cppcheck
-      uses: actions/cache/restore@v4
+      # renovate: datasource=github-tags depName=actions/cache versioning=loose
+      uses: actions/cache/restore@v4.2.4
       id: cache-cppcheck
       with:
         path: cppcheck
@@ -19,10 +16,11 @@ runs:
       shell: bash
       if: steps.cache-cppcheck.outputs.cache-hit != 'true'
       run: |
-        bash ./scripts/build_cppcheck.sh -v "${CPPCHECK_VER}"
+        bash ./scripts/build_cppcheck.sh -v ${CPPCHECK_VER}
 
     - name: Save cppcheck cache
-      uses: actions/cache/save@v4
+      # renovate: datasource=github-tags depName=actions/cache versioning=loose
+      uses: actions/cache/save@v4.2.4
       if: steps.cache-cppcheck.outputs.cache-hit != 'true'
       with:
         path: cppcheck
@@ -30,6 +28,7 @@ runs:
 
     - name: Install cppcheck
       shell: bash
+      # this step is fast, no need for caching
       run: |
         cd cppcheck
         sudo cmake --install build
@@ -39,33 +38,10 @@ runs:
     - name: Configure CMake
       uses: ./.github/actions/configure-cmake
       with:
-        custom_flags: "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+        custom_flags: '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'
+        cache_key: 'cache-cppcheck'
 
     - name: Cppcheck
       shell: bash
       run: |
-        set -euo pipefail
-
-        # Locate compile_commands.json
-        BUILD_DIR="${BUILD_DIR:-build}"
-        if [ ! -f "$BUILD_DIR/compile_commands.json" ]; then
-          ALT="$(ls -d cmake-build-* 2>/dev/null | head -n1 || true)"
-          if [ -n "$ALT" ] && [ -f "$ALT/compile_commands.json" ]; then
-            BUILD_DIR="$ALT"
-          fi
-        fi
-        echo "Using compile_commands.json from: $BUILD_DIR"
-
-        cppcheck \
-          --project="$BUILD_DIR/compile_commands.json" \
-          --enable=all \
-          --inline-suppr \
-          --error-exitcode=1 \
-          --template=gcc \
-          --platform=unix64 -D__linux__ -Dlinux \
-          --suppress=missingIncludeSystem \
-          --suppress=checkersReport \
-          --suppress=normalCheckLevelMaxBranches \
-          -i build/_deps \
-          .
-
+        bash ./scripts/run_cppcheck.sh
