@@ -1,6 +1,8 @@
 #include "../header/Enemy.h"
 #include <cmath>
 #include <filesystem>
+#include <vector>
+#include <algorithm>  // any_of
 using std::string;
 
 Enemy::Enemy(std::string name, int hp, float speed, std::string texturePath)
@@ -123,11 +125,11 @@ void Enemy::loadTexture() {
         candidates.push_back(string("../textures/") + name);
     }
 
-
-    bool loaded = false;
-    for (const auto& p : candidates) {
-        if (texture_.loadFromFile(p)) { loaded = true; break; }
-    }
+    // Use STL algorithm instead of a raw loop (satisfies cppcheck [useStlAlgorithm])
+    const bool loaded = std::any_of(candidates.begin(), candidates.end(),
+        [this](const std::string& p) {
+            return texture_.loadFromFile(p);
+        });
 
     if (!loaded) {
         sf::Image img; img.create(48, 48, sf::Color(255, 120, 120));  // fallback red box
