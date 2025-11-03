@@ -8,7 +8,7 @@ GameEngine::GameEngine(unsigned int width, unsigned int height, const std::strin
       gameOver_(false),
       playerWon_(false),
       player_("Dustin", 3, 220.f, "Dustin.png"),
-      enemy_("Ghoul", 2, 120.f, "Demogorgon.png"),
+      enemy_("Demogorgon", 2, 120.f, "Demogorgon.png"),
       map_({width, height}) {
     player_.setPosition(map_.getPlayerSpawn().x, map_.getPlayerSpawn().y);
     enemy_.setPosition(map_.getEnemySpawn().x, map_.getEnemySpawn().y);
