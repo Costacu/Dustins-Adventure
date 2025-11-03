@@ -24,7 +24,6 @@ public:
 
         void translate(float dx, float dy) { x_ += dx; y_ += dy; }
 
-        sf::Vector2f asSFML() const { return {x_, y_}; }
     };
 
     explicit Enemy(std::string name = "Demogorgon", int hp = 2, float speed = 100.f, std::string texturePath_ = "textures/Demogorgon.png");
