@@ -6,6 +6,7 @@ endif()
 if(POLICY CMP0177)
     cmake_policy(SET CMP0177 NEW)
 endif()
+set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE INTERNAL "No dev warnings")
 # NOTE: update executable name in .github/workflows/cmake.yml:25 when changing executable name in this file
 # for now, the project name is used as the executable name
 project(oop)
