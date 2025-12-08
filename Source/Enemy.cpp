@@ -2,20 +2,22 @@
 #include <cmath>
 #include <filesystem>
 #include <vector>
-#include <algorithm>  // any_of
+#include <algorithm>
 using std::string;
 
+//constructor in clasa derivata
 Enemy::Enemy(std::string name, int hp, float speed, std::string texturePath)
-    : name_(std::move(name)), texturePath_(std::move(texturePath)), hp_(hp), maxHp_(hp), speed_(speed) {
-    pos_.set(0.f, 0.f);
+    : Entity(0.f, 0.f),
+      name_(std::move(name)),
+      texturePath_(std::move(texturePath)),
+      hp_(hp),
+      maxHp_(hp),
+      speed_(speed),
+      distractPos_(0.f, 0.f)
+{
     loadTexture();
-    sprite_.setPosition(pos_.getX(), pos_.getY());
-
-    distracted_ = false;
-    distractTimer_ = 0.f;
-    distractPos_ = sf::Vector2f(0.f,0.f);
-
 }
+
 
 Enemy::Enemy(const Enemy& other)
     : name_(other.name_),
@@ -23,7 +25,10 @@ Enemy::Enemy(const Enemy& other)
       hp_(other.hp_),
       maxHp_(other.maxHp_),
       speed_(other.speed_),
-      pos_(other.pos_) {
+      distracted_(other.distracted_),
+      distractTimer_(other.distractTimer_),
+      distractPos_(other.distractPos_) {
+    pos_ = other.pos_;
     loadTexture();
     sprite_.setPosition(pos_.getX(), pos_.getY());
 }
@@ -39,13 +44,34 @@ Enemy& Enemy::operator=(const Enemy& other) {
         loadTexture();
         sprite_.setPosition(pos_.getX(), pos_.getY());
         distractTimer_ = other.distractTimer_;
+        distracted_ = other.distracted_;
+        distractPos_ = other.distractPos_;
     }
     return *this;
 }
 
+Entity* Enemy::clone() const {
+    return new Enemy(*this);
+}
+
 Enemy::~Enemy() = default;
 
-void Enemy::update(float dt, const sf::Vector2f& playerPos, const sf::FloatRect& playArea) {
+void Enemy::update(float dt) {
+    if (distracted_) {
+        distractTimer_ -= dt;
+        if (distractTimer_ <= 0.f)
+            distracted_ = false;
+    }
+}
+
+void Enemy::print(std::ostream& os) const {
+    os << "Enemy(name=" << name_ << ", speed=" << speed_;
+
+}
+
+
+
+void Enemy::chase(float dt, const sf::Vector2f& playerPos, const sf::FloatRect& playArea) {
     if (distracted_) {
         distractTimer_ -= dt;
         if (distractTimer_ <= 0.f) {
@@ -80,37 +106,28 @@ void Enemy::update(float dt, const sf::Vector2f& playerPos, const sf::FloatRect&
 
 void Enemy::reset() {
     hp_ = maxHp_;
-    pos_.set(0.f, 0.f);
-    sprite_.setPosition(pos_.getX(), pos_.getY());
+    setPosition(0.f, 0.f);
 }
 
 const std::string& Enemy::getName() const { return name_; }
 const std::string& Enemy::getTexturePath() const { return texturePath_; }
-int Enemy::getHp() const { return hp_; }
-int Enemy::getMaxHp() const { return maxHp_; }
 float Enemy::getSpeed() const { return speed_; }
 const Enemy::Position& Enemy::getPosition() const { return pos_; }
 
 sf::FloatRect Enemy::getBounds() const {
-    sf::FloatRect b = sprite_.getGlobalBounds();
-    if (b.width <= 0.f || b.height <= 0.f)
-        return sf::FloatRect(pos_.getX(), pos_.getY(), 48.f, 48.f);
-    return b;
+    return Entity::getBounds();
 }
 
-
 void Enemy::setPosition(float newX, float newY) {
-    pos_.set(newX, newY);
-    sprite_.setPosition(pos_.getX(), pos_.getY());
+    Entity::setPosition(newX, newY);
 }
 
 void Enemy::move(float dx, float dy) {
-    pos_.translate(dx, dy);
-    sprite_.setPosition(pos_.getX(), pos_.getY());
+    Entity::move(dx, dy);
 }
 
 void Enemy::draw(sf::RenderWindow& window) const {
-    window.draw(sprite_);
+    Entity::draw(window);
 }
 
 void Enemy::loadTexture() {
@@ -125,14 +142,13 @@ void Enemy::loadTexture() {
         candidates.push_back(string("../textures/") + name);
     }
 
-    // Use STL algorithm instead of a raw loop (satisfies cppcheck [useStlAlgorithm])
     const bool loaded = std::any_of(candidates.begin(), candidates.end(),
         [this](const std::string& p) {
             return texture_.loadFromFile(p);
         });
 
     if (!loaded) {
-        sf::Image img; img.create(48, 48, sf::Color(255, 120, 120));  // fallback red box
+        sf::Image img; img.create(48, 48, sf::Color(255, 120, 120));
         texture_.loadFromImage(img);
     }
 
@@ -146,7 +162,6 @@ void Enemy::loadTexture() {
     }
     sprite_.setPosition(pos_.getX(), pos_.getY());
 }
-
 
 void Enemy::distractTo(const sf::Vector2f& pos, float seconds) {
     distractPos_ = pos;

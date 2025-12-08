@@ -62,6 +62,9 @@ add_executable(${PROJECT_NAME}
         header/Map.h
         Source/GameEngine.cpp
         header/GameEngine.h
+        Source/Entity.cpp
+        header/Entity.h
+        Source/Decoy.cpp
         header/Decoy.h
 )
 

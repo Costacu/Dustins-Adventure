@@ -64,7 +64,7 @@ void GameEngine::update(float dt) {
     if (gameOver_) return;
 
     player_.update(dt);
-    enemy_.update(dt,
+    enemy_.chase(dt,
                   sf::Vector2f(player_.getPosition().getX(), player_.getPosition().getY()),
                   map_.getPlayArea());
 
@@ -81,7 +81,7 @@ void GameEngine::update(float dt) {
     player_.setPosition(pClamped.x, pClamped.y);
     enemy_.setPosition(eClamped.x, eClamped.y);
 
-    for (auto& d : decoys_) d.update(dt, map_.getPlayArea());
+    for (auto& d : decoys_) d.update(dt);
 
     decoys_.erase(std::remove_if(decoys_.begin(), decoys_.end(),
         [](const Decoy& d){ return !d.active(); }), decoys_.end());

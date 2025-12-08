@@ -2,23 +2,26 @@
 #include <iostream>
 #include <filesystem>
 #include <vector>
-#include <algorithm>  // any_of / find_if
+#include <algorithm>
 using std::string;
 
+//constructor in clasa derivata
 Player::Player(std::string name, int hp, float speed, std::string texturePath)
-    : name_(std::move(name)), texturePath_(std::move(texturePath)), hp_(hp), maxHp_(hp), speed_(speed) {
-    pos_.set(0.f, 0.f);
+    : Entity(0.f, 0.f),
+      name_(std::move(name)),
+      texturePath_(std::move(texturePath)),
+      hp_(hp), maxHp_(hp), speed_(speed)
+{
     loadTexture();
-    sprite_.setPosition(pos_.getX(), pos_.getY());
 }
 
 Player::Player(const Player& other)
     : name_(other.name_),
-      texturePath_(other.texturePath_),
       hp_(other.hp_),
-      maxHp_(other.maxHp_),
       speed_(other.speed_),
-      pos_(other.pos_) {
+      texturePath_(other.texturePath_),
+      maxHp_(other.maxHp_) {
+    pos_ = other.pos_;
     loadTexture();
     sprite_.setPosition(pos_.getX(), pos_.getY());
 }
@@ -37,6 +40,17 @@ Player& Player::operator=(const Player& other) {
     return *this;
 }
 
+Entity* Player::clone() const {
+    return new Player(*this);
+}
+
+void Player::print(std::ostream& os) const {
+    os << "Player(name=" << name_
+       << ", hp=" << hp_ << "/" << maxHp_
+       << ", speed=" << speed_;
+}
+
+
 Player::~Player() = default;
 
 void Player::update(const float dt) {
@@ -50,8 +64,11 @@ void Player::update(const float dt) {
 
 void Player::reset() {
     hp_ = maxHp_;
-    pos_.set(0.f, 0.f);
-    sprite_.setPosition(pos_.getX(), pos_.getY());
+    setPosition(0.f, 0.f);
+}
+
+void Player::draw(sf::RenderWindow& window) const {
+    Entity::draw(window);
 }
 
 const std::string& Player::getName() const { return name_; }
@@ -61,21 +78,12 @@ int Player::getMaxHp() const { return maxHp_; }
 float Player::getSpeed() const { return speed_; }
 const Player::Position& Player::getPosition() const { return pos_; }
 
-sf::FloatRect Player::getBounds() const {
-    sf::FloatRect b = sprite_.getGlobalBounds();
-    if (b.width <= 0.f || b.height <= 0.f)
-        return sf::FloatRect(pos_.getX(), pos_.getY(), 48.f, 48.f);
-    return b;
-}
-
 void Player::setPosition(float newX, float newY) {
-    pos_.set(newX, newY);
-    sprite_.setPosition(pos_.getX(), pos_.getY());
+    Entity::setPosition(newX, newY);
 }
 
 void Player::move(float dx, float dy) {
-    pos_.set(pos_.getX() + dx, pos_.getY() + dy);
-    sprite_.setPosition(pos_.getX(), pos_.getY());
+    Entity::move(dx, dy);
 }
 
 void Player::loadTexture() {
@@ -103,16 +111,12 @@ void Player::loadTexture() {
     texture_.setSmooth(true);
     sprite_.setTexture(texture_);
 
-    auto sz = texture_.getSize();
+    const auto sz = texture_.getSize();
     const float W = 48.f, H = 48.f;
     if (sz.x > 0 && sz.y > 0) {
         sprite_.setScale(W / static_cast<float>(sz.x), H / static_cast<float>(sz.y));
     }
     sprite_.setPosition(pos_.getX(), pos_.getY());
-}
-
-void Player::draw(sf::RenderWindow& window) const {
-    window.draw(sprite_);
 }
 
 std::ostream& operator<<(std::ostream& os, const Player::Position& p) {
