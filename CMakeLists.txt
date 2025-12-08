@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.26)
+cmake_policy(SET CMP0177 NEW)
 
 # NOTE: update executable name in .github/workflows/cmake.yml:25 when changing executable name in this file
 # for now, the project name is used as the executable name
@@ -105,8 +106,6 @@ if (WIN32 AND SFML_BUILD_AUDIO)
          $<TARGET_FILE_DIR:${PROJECT_NAME}>
     )
 endif()
-set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE INTERNAL "No dev warnings")
-
 
 
 include(cmake/CopyHelper.cmake)
