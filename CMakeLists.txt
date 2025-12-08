@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.26)
-cmake_policy(SET CMP0177 NEW)
+if(POLICY CMP0077)
+    cmake_policy(SET CMP0077 NEW)
+endif()
 
+if(POLICY CMP0177)
+    cmake_policy(SET CMP0177 NEW)
+endif()
 # NOTE: update executable name in .github/workflows/cmake.yml:25 when changing executable name in this file
 # for now, the project name is used as the executable name
 project(oop)
