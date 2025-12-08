@@ -67,5 +67,3 @@ runs:
           --suppress=checkersReport \
           --suppress=normalCheckLevelMaxBranches \
           -i build/_deps \
-          .
-
