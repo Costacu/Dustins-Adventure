@@ -8,29 +8,23 @@
 
 class Enemy : public Entity {
 public:
-    explicit Enemy(std::string name = "Demogorgon", int hp = 2, float speed = 100.f, std::string texturePath_ = "textures/Demogorgon.png");
+    explicit Enemy(std::string name = "Demogorgon", int hp = 2, float speed = 100.f, std::string texturePath = "textures/Demogorgon.png");
+
     Enemy(const Enemy& other);
     Enemy& operator=(const Enemy& other);
-
     ~Enemy() override;
 
     Entity* clone() const override;
     void print(std::ostream& os) const override;
     void update(float dt) override;
+
     void chase(float dt, const sf::Vector2f& playerPos, const sf::FloatRect& playArea);
+    void distractTo(const sf::Vector2f& pos, float seconds);
     void reset();
 
     const std::string& getName() const;
     const std::string& getTexturePath() const;
     float getSpeed() const;
-    const Position& getPosition() const;
-    sf::FloatRect getBounds() const override;
-
-    void setPosition(float newX, float newY) override;
-    void move(float dx, float dy);
-    void draw(sf::RenderWindow& window) const override;
-
-    void distractTo(const sf::Vector2f& pos, float seconds);
 
 private:
     void loadTexture();

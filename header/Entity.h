@@ -23,7 +23,7 @@ public:
     };
 
     virtual void update(float dt) = 0;
-    virtual Entity* clone() const = 0;
+    [[maybe_unused]] virtual Entity* clone() const = 0;
     Entity(float x = 0.f, float y = 0.f);
 
     virtual void print(std::ostream& os) const = 0;
