@@ -66,6 +66,8 @@ add_executable(${PROJECT_NAME}
         header/Entity.h
         Source/Decoy.cpp
         header/Decoy.h
+        header/Exceptions.h
+        header/EntityPointer.h
 )
 
 include(cmake/CompilerFlags.cmake)

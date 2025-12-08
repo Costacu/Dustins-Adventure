@@ -26,7 +26,6 @@ public:
     virtual Entity* clone() const = 0;
     Entity(float x = 0.f, float y = 0.f);
 
-
     virtual void print(std::ostream& os) const = 0;
     friend std::ostream& operator<<(std::ostream& os, const Entity& e) {
         e.print(os);
@@ -35,6 +34,7 @@ public:
 
     virtual sf::FloatRect getBounds() const;
     virtual const Position& getPosition() const { return pos_; }
+
     virtual void setPosition(float newX, float newY);
     virtual void move(float dx, float dy);
     virtual void draw(sf::RenderWindow& window) const;

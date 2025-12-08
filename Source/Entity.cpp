@@ -1,4 +1,6 @@
 #include "../header/Entity.h"
+#include "../header/Exceptions.h"
+
 
 sf::FloatRect Entity::getBounds() const {
     sf::FloatRect b = sprite_.getGlobalBounds();
@@ -7,10 +9,14 @@ sf::FloatRect Entity::getBounds() const {
     return b;
 }
 
-void Entity::setPosition(float newX, float newY) {
-    pos_.set(newX, newY);
-    sprite_.setPosition(pos_.getX(), pos_.getY());
+void Entity::setPosition(float x, float y) {
+    if (x < 0 || y < 0)
+        throw InvalidPositionError(x, y);
+
+    pos_.set(x, y);
+    sprite_.setPosition(x, y);
 }
+
 
 void Entity::move(float dx, float dy) {
     pos_.translate(dx, dy);
@@ -26,4 +32,5 @@ Entity::Entity(float x, float y) {
     pos_.set(x, y);
     sprite_.setPosition(x, y);
 }
+
 

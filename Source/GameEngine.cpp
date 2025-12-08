@@ -1,4 +1,5 @@
 #include "../header/GameEngine.h"
+#include "../header/Exceptions.h"
 #include <iostream>
 #include <cmath>
 
@@ -7,7 +8,7 @@ GameEngine::GameEngine(unsigned int width, unsigned int height, const std::strin
       isRunning_(true),
       gameOver_(false),
       playerWon_(false),
-      player_("Dustin", 3, 220.f, "Dustin.png"),
+      player_("Dustin", 3, 220.f, "Dustin1.png"),
       enemy_("Demogorgon", 2, 120.f, "Demogorgon.png"),
       map_({width, height}) {
     player_.setPosition(map_.getPlayerSpawn().x, map_.getPlayerSpawn().y);
@@ -182,6 +183,9 @@ void GameEngine::updateOverlayText(const std::string& titleLine, const std::stri
 
 
 void GameEngine::throwDecoy() {
+    if (gameOver_)
+        throw GameStateError("Cannot throw decoy after game over.");
+
     sf::FloatRect bounds = player_.getBounds();
     sf::Vector2f center(bounds.left + bounds.width / 2.f,
                         bounds.top + bounds.height / 2.f);

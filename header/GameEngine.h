@@ -5,6 +5,7 @@
 #include "Enemy.h"
 #include "Map.h"
 #include "Decoy.h"
+#include "Exceptions.h"
 
 class GameEngine {
 public:

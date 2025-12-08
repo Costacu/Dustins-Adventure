@@ -1,4 +1,5 @@
 #include "../header/Player.h"
+#include "../header/Exceptions.h"
 #include <iostream>
 #include <filesystem>
 #include <vector>
@@ -16,11 +17,13 @@ Player::Player(std::string name, int hp, float speed, std::string texturePath)
 }
 
 Player::Player(const Player& other)
-    : name_(other.name_),
-      hp_(other.hp_),
-      speed_(other.speed_),
+    : Entity(other),
+      name_(other.name_),
       texturePath_(other.texturePath_),
-      maxHp_(other.maxHp_) {
+      hp_(other.hp_),
+      maxHp_(other.maxHp_),
+      speed_(other.speed_)
+       {
     pos_ = other.pos_;
     loadTexture();
     sprite_.setPosition(pos_.getX(), pos_.getY());
@@ -49,7 +52,6 @@ void Player::print(std::ostream& os) const {
        << ", hp=" << hp_ << "/" << maxHp_
        << ", speed=" << speed_;
 }
-
 
 Player::~Player() = default;
 
@@ -93,31 +95,31 @@ void Player::loadTexture() {
     std::vector<string> candidates;
     candidates.push_back(name);
     if (name.find('/') == string::npos && name.find('\\') == string::npos) {
-        candidates.push_back(string("textures/") + name);
-        candidates.push_back(string("../textures/") + name);
+        candidates.push_back("textures/" + name);
+        candidates.push_back("../textures/" + name);
     }
 
-    // Use STL algorithm instead of a raw loop (matches cppcheck suggestion)
-    const bool loaded = std::any_of(candidates.begin(), candidates.end(),
-        [this](const std::string& p) {
-            return texture_.loadFromFile(p);
-        });
+    bool loaded = false;
+    for (const auto& p : candidates) {
+        if (texture_.loadFromFile(p)) {
+            loaded = true;
+            break;
+        }
+    }
 
     if (!loaded) {
-        sf::Image img; img.create(48, 48, sf::Color(200, 200, 255));
-        texture_.loadFromImage(img);
+        throw FileLoadError(texturePath_);
     }
 
     texture_.setSmooth(true);
-    sprite_.setTexture(texture_);
+    sprite_.setTexture(texture_, true);
 
-    const auto sz = texture_.getSize();
-    const float W = 48.f, H = 48.f;
-    if (sz.x > 0 && sz.y > 0) {
-        sprite_.setScale(W / static_cast<float>(sz.x), H / static_cast<float>(sz.y));
-    }
+    auto sz = texture_.getSize();
+    sprite_.setScale(48.f / sz.x, 48.f / sz.y);
     sprite_.setPosition(pos_.getX(), pos_.getY());
 }
+
+
 
 std::ostream& operator<<(std::ostream& os, const Player::Position& p) {
     os << "(" << p.getX() << ", " << p.getY() << ")";
