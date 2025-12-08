@@ -19,15 +19,15 @@ public:
 
     void update(float dt) override;
     void reset();
-    void setPosition(float newX, float newY) override;
-    const Position& getPosition() const override;
+    void setPosition(float newX, float newY);
+    const Position& getPosition() const;
     void draw(sf::RenderWindow& window) const override;
     const std::string& getName() const;
     const std::string& getTexturePath() const;
     int getHp() const;
     int getMaxHp() const;
     float getSpeed() const;
-    void move(float dx, float dy) override;
+    void move(float dx, float dy);
 
 private:
     void loadTexture();
