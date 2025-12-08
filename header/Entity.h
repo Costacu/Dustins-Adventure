@@ -40,10 +40,13 @@ public:
     virtual void draw(sf::RenderWindow& window) const;
     virtual ~Entity() = default;
 
+    static int getEntityCount();
+
 protected:
     Position pos_;
     sf::Texture texture_;
     sf::Sprite sprite_;
+    static int entityCount;
 };
 
 #endif //ENTITY_H

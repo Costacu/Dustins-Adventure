@@ -20,7 +20,8 @@ Enemy::Enemy(std::string name, int hp, float speed, std::string texturePath)
 
 
 Enemy::Enemy(const Enemy& other)
-    : name_(other.name_),
+    : Entity(0.f, 0.f),
+      name_(other.name_),
       texturePath_(other.texturePath_),
       hp_(other.hp_),
       maxHp_(other.maxHp_),

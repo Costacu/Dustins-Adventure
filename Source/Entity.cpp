@@ -27,10 +27,17 @@ void Entity::draw(sf::RenderWindow& window) const {
     window.draw(sprite_);
 }
 
+int Entity::entityCount = 0;
+
 //constructor in clasa de baza
 Entity::Entity(float x, float y) {
     pos_.set(x, y);
     sprite_.setPosition(x, y);
+    entityCount++;
 }
+int Entity::getEntityCount() {
+    return entityCount;
+}
+
 
 
