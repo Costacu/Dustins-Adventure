@@ -110,12 +110,6 @@ void Enemy::reset() {
     setPosition(0.f, 0.f);
 }
 
-const std::string& Enemy::getName() const { return name_; }
-const std::string& Enemy::getTexturePath() const { return texturePath_; }
-float Enemy::getSpeed() const { return speed_; }
-
-
-
 void Enemy::loadTexture() {
     namespace fs = std::filesystem;
 

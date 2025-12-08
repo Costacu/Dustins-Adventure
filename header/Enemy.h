@@ -22,10 +22,6 @@ public:
     void distractTo(const sf::Vector2f& pos, float seconds);
     void reset();
 
-    const std::string& getName() const;
-    const std::string& getTexturePath() const;
-    float getSpeed() const;
-
 private:
     void loadTexture();
 

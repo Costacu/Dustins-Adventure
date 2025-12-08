@@ -35,7 +35,7 @@ Entity::Entity(float x, float y) {
     sprite_.setPosition(x, y);
     entityCount++;
 }
-int Entity::getEntityCount() {
+[[maybe_unused]]int Entity::getEntityCount() {
     return entityCount;
 }
 

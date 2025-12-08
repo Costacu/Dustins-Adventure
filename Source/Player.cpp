@@ -40,7 +40,7 @@ Player& Player::operator=(const Player& other) {
 
 Player::~Player() = default;
 
-Entity* Player::clone() const {
+[[maybe_unused]] Entity* Player::clone() const {
     return new Player(*this);
 }
 
