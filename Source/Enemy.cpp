@@ -113,23 +113,8 @@ void Enemy::reset() {
 const std::string& Enemy::getName() const { return name_; }
 const std::string& Enemy::getTexturePath() const { return texturePath_; }
 float Enemy::getSpeed() const { return speed_; }
-const Enemy::Position& Enemy::getPosition() const { return pos_; }
 
-sf::FloatRect Enemy::getBounds() const {
-    return Entity::getBounds();
-}
 
-void Enemy::setPosition(float newX, float newY) {
-    Entity::setPosition(newX, newY);
-}
-
-void Enemy::move(float dx, float dy) {
-    Entity::move(dx, dy);
-}
-
-void Enemy::draw(sf::RenderWindow& window) const {
-    Entity::draw(window);
-}
 
 void Enemy::loadTexture() {
     namespace fs = std::filesystem;

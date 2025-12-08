@@ -40,7 +40,7 @@ public:
     virtual void draw(sf::RenderWindow& window) const;
     virtual ~Entity() = default;
 
-    static int getEntityCount();
+    [[maybe_unused]] static int getEntityCount();
 
 protected:
     Position pos_;

@@ -8,30 +8,19 @@
 
 class Player : public Entity {
 public:
-    explicit Player(std::string name = "Dustin", int hp = 2, float speed = 1.0f,
-                    std::string texturePath = "textures/Dustin1.png");
+    explicit Player(std::string name = "Dustin", int hp = 2, float speed = 1.0f, std::string texturePath = "textures/Dustin1.png");
 
     Player(const Player& other);
     Player& operator=(const Player& other);
     ~Player() override;
 
-    Entity* clone() const override;
+    [[maybe_unused]] Entity* clone() const override;
     void print(std::ostream& os) const override;
 
     void update(float dt) override;
     void reset();
-
-    // DOAR ACEASTA are sens să fie override
-    void setPosition(float newX, float newY) override;
-
+    
     void draw(sf::RenderWindow& window) const override;
-
-    // Getters
-    const std::string& getName() const;
-    const std::string& getTexturePath() const;
-    int getHp() const;
-    int getMaxHp() const;
-    float getSpeed() const;
 
 private:
     void loadTexture();

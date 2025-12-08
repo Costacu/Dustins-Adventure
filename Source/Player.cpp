@@ -66,19 +66,10 @@ void Player::reset() {
     setPosition(0.f, 0.f);
 }
 
-void Player::setPosition(float newX, float newY) {
-    Entity::setPosition(newX, newY);
-}
-
 void Player::draw(sf::RenderWindow& window) const {
     Entity::draw(window);
 }
 
-const std::string& Player::getName() const { return name_; }
-const std::string& Player::getTexturePath() const { return texturePath_; }
-int Player::getHp() const { return hp_; }
-int Player::getMaxHp() const { return maxHp_; }
-float Player::getSpeed() const { return speed_; }
 
 void Player::loadTexture() {
     std::vector<std::string> paths = {
