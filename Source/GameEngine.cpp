@@ -11,6 +11,9 @@ GameEngine::GameEngine(unsigned int width, unsigned int height, const std::strin
       player_("Dustin", 3, 220.f, "Dustin1.png"),
       enemy_("Demogorgon", 2, 120.f, "Demogorgon.png"),
       map_({width, height}) {
+    std::cout << "Entities: " << Entity::getEntityCount() << "\n";
+    Entity* temp = player_.clone();
+    delete temp;
     player_.setPosition(map_.getPlayerSpawn().x, map_.getPlayerSpawn().y);
     enemy_.setPosition(map_.getEnemySpawn().x, map_.getEnemySpawn().y);
     setupUI();
