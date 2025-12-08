@@ -23,11 +23,11 @@ public:
     const std::string& getName() const;
     const std::string& getTexturePath() const;
     float getSpeed() const;
-    const Position& getPosition() const override;
+    const Position& getPosition() const;
     sf::FloatRect getBounds() const override;
 
     void setPosition(float newX, float newY) override;
-    void move(float dx, float dy) override;
+    void move(float dx, float dy);
     void draw(sf::RenderWindow& window) const override;
 
     void distractTo(const sf::Vector2f& pos, float seconds);
