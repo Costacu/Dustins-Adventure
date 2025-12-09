@@ -40,9 +40,8 @@ Map::~Map() = default;
 void Map::buildMap() {
     walls_.clear();
 
-    for (int r = 0; r < grid_.size(); r++) {
-        for (int c = 0; c < grid_[r].size(); c++) {
-
+    for (size_t r = 0; r < grid_.size(); r++) {
+        for (size_t c = 0; c < grid_[r].size(); c++) {
             char tile = grid_[r][c];
             float x = c * TILE;
             float y = r * TILE;
