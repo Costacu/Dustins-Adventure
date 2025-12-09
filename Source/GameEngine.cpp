@@ -8,7 +8,7 @@ GameEngine::GameEngine(unsigned int width, unsigned int height, const std::strin
       isRunning_(true),
       gameOver_(false),
       playerWon_(false),
-      player_("Dustin", 3, 220.f, "Dustin1.png"),
+      player_("Dustin", 3, 220.f, "Dustin.png"),
       enemy_("Demogorgon", 2, 120.f, "Demogorgon.png"),
       map_({width, height}) {
     std::cout << "Entities: " << Entity::getEntityCount() << "\n";
@@ -67,36 +67,33 @@ void GameEngine::processEvents() {
 void GameEngine::update(float dt) {
     if (gameOver_) return;
 
+    auto oldP = player_.getPosition();
     player_.update(dt);
+    if (map_.collidesWithWall(player_.getBounds())) {
+        player_.setPosition(oldP.getX(), oldP.getY());
+    }
+
+    auto oldE = enemy_.getPosition();
     enemy_.chase(dt,
-                  sf::Vector2f(player_.getPosition().getX(), player_.getPosition().getY()),
-                  map_.getPlayArea());
-
-    sf::FloatRect pB = player_.getBounds();
-    sf::FloatRect eB = enemy_.getBounds();
-    sf::Vector2f pSize(pB.width, pB.height);
-    sf::Vector2f eSize(eB.width, eB.height);
-
-    sf::Vector2f pClamped = map_.clampPosition(
-        sf::Vector2f(player_.getPosition().getX(), player_.getPosition().getY()), pSize);
-    sf::Vector2f eClamped = map_.clampPosition(
-        sf::Vector2f(enemy_.getPosition().getX(), enemy_.getPosition().getY()), eSize);
-
-    player_.setPosition(pClamped.x, pClamped.y);
-    enemy_.setPosition(eClamped.x, eClamped.y);
+                 sf::Vector2f(player_.getPosition().getX(), player_.getPosition().getY()),
+                 map_.getPlayArea());
+    if (map_.collidesWithWall(enemy_.getBounds())) {
+        enemy_.setPosition(oldE.getX(), oldE.getY());
+    }
 
     for (auto& d : decoys_) d.update(dt);
-
     decoys_.erase(std::remove_if(decoys_.begin(), decoys_.end(),
         [](const Decoy& d){ return !d.active(); }), decoys_.end());
 
     if (!decoys_.empty()) {
         float bestDist2 = std::numeric_limits<float>::max();
         sf::Vector2f bestPos = decoys_.front().position();
+
         for (const auto& d : decoys_) {
             if (!d.active()) continue;
             sf::Vector2f dp = d.position() -
-                              sf::Vector2f(enemy_.getPosition().getX(), enemy_.getPosition().getY());
+                              sf::Vector2f(enemy_.getPosition().getX(),
+                                           enemy_.getPosition().getY());
             float dist2 = dp.x * dp.x + dp.y * dp.y;
             if (dist2 < bestDist2) { bestDist2 = dist2; bestPos = d.position(); }
         }
@@ -106,6 +103,7 @@ void GameEngine::update(float dt) {
     checkCollisions();
     checkWinCondition();
 }
+
 
 
 void GameEngine::render() {

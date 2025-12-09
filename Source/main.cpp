@@ -5,7 +5,7 @@
 
 int main() {
     try {
-        GameEngine game(800, 600, "Dustin's Adventure");
+        GameEngine game(1920, 1380, "Dustin's Adventure");
         game.run();
     }
     catch (const EngineInitError& e) {

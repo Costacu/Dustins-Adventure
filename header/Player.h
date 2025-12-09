@@ -8,7 +8,7 @@
 
 class Player : public Entity {
 public:
-    explicit Player(std::string name = "Dustin", int hp = 2, float speed = 1.0f, std::string texturePath = "textures/Dustin1.png");
+    explicit Player(std::string name = "Dustin", int hp = 2, float speed = 1.0f, std::string texturePath = "textures/Dustin.png");
 
     Player(const Player& other);
     Player& operator=(const Player& other);
@@ -19,7 +19,7 @@ public:
 
     void update(float dt) override;
     void reset();
-    
+
     void draw(sf::RenderWindow& window) const override;
 
 private:

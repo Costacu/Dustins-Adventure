@@ -58,7 +58,7 @@ void Player::update(float dt) {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) dy -= speed_ * dt;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) dy += speed_ * dt;
 
-    move(dx, dy); // folosim direct metoda din Entity
+    move(dx, dy);
 }
 
 void Player::reset() {
