@@ -16,8 +16,6 @@ public:
 
         [[nodiscard]] float getX() const { return x; }
         [[nodiscard]] float getY() const { return y; }
-        void setX(float newX) { x = newX; }
-        void setY(float newY) { y = newY; }
         void set(float newX, float newY) { x = newX; y = newY; }
         void translate(float dx, float dy) { x += dx; y += dy; }
     };

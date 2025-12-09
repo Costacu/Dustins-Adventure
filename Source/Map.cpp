@@ -1,6 +1,7 @@
 #include "../header/Map.h"
 #include <iostream>
 
+
 Map::Map(sf::Vector2u windowSize)
     : windowSize_(windowSize), margin_(0.f)
 {
@@ -69,12 +70,12 @@ void Map::buildMap() {
 }
 
 bool Map::collidesWithWall(const sf::FloatRect& box) const {
-    for (const auto& w : walls_) {
-        if (box.intersects(w.getGlobalBounds()))
-            return true;
-    }
-    return false;
+    return std::any_of(walls_.begin(), walls_.end(),
+        [&](const sf::RectangleShape& w) {
+            return box.intersects(w.getGlobalBounds());
+        });
 }
+
 
 bool Map::reachedDoor(const sf::FloatRect& bounds) const {
     return bounds.intersects(doorBounds_);
@@ -87,10 +88,6 @@ void Map::draw(sf::RenderWindow& window) const {
     window.draw(background_);
     for (const auto& w : walls_) window.draw(w);
     window.draw(doorShape_);
-}
-
-const sf::FloatRect& Map::getPlayArea() const {
-    return playArea_;
 }
 
 void Map::rebuildPlayArea() {

@@ -13,7 +13,6 @@ public:
 
     void draw(sf::RenderWindow& window) const;
 
-    const sf::FloatRect& getPlayArea() const;
     bool reachedDoor(const sf::FloatRect& bounds) const;
 
     sf::Vector2f getPlayerSpawn() const;
