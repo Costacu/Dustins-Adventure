@@ -74,9 +74,7 @@ void GameEngine::update(float dt) {
     }
 
     auto oldE = enemy_.getPosition();
-    enemy_.chase(dt,
-                 sf::Vector2f(player_.getPosition().getX(), player_.getPosition().getY()),
-                 map_.getPlayArea());
+    enemy_.updateAI(dt,  sf::Vector2f(player_.getPosition().getX(), player_.getPosition().getY()), map_);
     if (map_.collidesWithWall(enemy_.getBounds())) {
         enemy_.setPosition(oldE.getX(), oldE.getY());
     }
@@ -99,12 +97,9 @@ void GameEngine::update(float dt) {
         }
         enemy_.distractTo(bestPos, 0.2f);
     }
-
     checkCollisions();
     checkWinCondition();
 }
-
-
 
 void GameEngine::render() {
     window_.clear();
@@ -119,7 +114,6 @@ void GameEngine::render() {
     }
     window_.display();
 }
-
 
 void GameEngine::reset() {
     gameOver_ = false;
