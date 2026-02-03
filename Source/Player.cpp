@@ -51,6 +51,10 @@ Player& Player::operator=(const Player& other) {
 
 Player::~Player() = default;
 
+[[maybe_unused]] Entity* Player::clone() const {
+    return new Player(*this);
+}
+
 void Player::print(std::ostream& os) const {
     os << "Player(name=" << name_ << ", decoys=" << decoyCount_ << ", shovel=" << hasShovel_ << ")";
 }

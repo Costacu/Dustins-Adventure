@@ -16,6 +16,7 @@ public:
     Player& operator=(const Player& other);
     ~Player() override;
 
+    Entity* clone() const override;
     void print(std::ostream& os) const override;
 
     void update(float dt) override;
