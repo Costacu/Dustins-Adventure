@@ -51,7 +51,7 @@ Player& Player::operator=(const Player& other) {
 
 Player::~Player() = default;
 
-Entity* Player::clone() const {
+[[maybe_unused]] Entity* Player::clone() const {
     return new Player(*this);
 }
 
@@ -102,7 +102,11 @@ void Player::update(float dt) {
     }
 }
 
-void Player::addDecoys(int count) { decoyCount_ += count; }
+void Player::addDecoys(int count) {
+    decoyCount_ += count;
+    if (decoyCount_ > 5) decoyCount_ = 5;
+}
+
 bool Player::useDecoy() {
     if (decoyCount_ > 0) {
         decoyCount_--;

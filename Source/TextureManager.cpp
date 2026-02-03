@@ -1,4 +1,6 @@
 #include "../header/TextureManager.h"
+#include <vector>
+#include <algorithm>
 
 TextureManager& TextureManager::getInstance() {
     static TextureManager instance;
@@ -14,13 +16,9 @@ sf::Texture& TextureManager::getTexture(const std::string& path) {
             "../textures/" + path
         };
 
-        bool loaded = false;
-        for (const auto& p : possiblePaths) {
-            if (tex.loadFromFile(p)) {
-                loaded = true;
-                break;
-            }
-        }
+        bool loaded = std::any_of(possiblePaths.begin(), possiblePaths.end(), [&](const std::string& p) {
+            return tex.loadFromFile(p);
+        });
 
         if (!loaded) {
             sf::Image img;
