@@ -25,7 +25,6 @@ public:
 
     sf::Vector2f getPlayerSpawn() const;
     const std::vector<sf::Vector2f>& getEnemySpawns() const;
-    sf::Vector2f getTransitionSpawn() const;
 
     sf::Vector2f getMapSize() const;
 
@@ -44,7 +43,6 @@ public:
     bool isShovelTaken() const;
     void takeShovel();
 
-    bool isRubbleCleared(int index) const;
     void clearRubble(int index);
     int getIntersectingRubbleIndex(const sf::FloatRect& bounds) const;
 
@@ -57,7 +55,6 @@ public:
 
     sf::FloatRect getShovelBounds() const;
     sf::FloatRect getGeneratorBounds() const;
-    const std::vector<sf::RectangleShape>& getRubbleShapes() const;
 
 private:
     void buildMap();

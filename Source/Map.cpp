@@ -116,7 +116,7 @@ Map::Map(sf::Vector2u windowSize)
         "W.WWWWW.W.W.WWWCWWW.WWWW.W",
         "W.W.....W.W.R.....R......W",
         "W.W.E...W.W.W..G..R......W",
-        "W.W.....W.W.WWWWWWW......W",
+        "W.W.....W.W.WWWWWWW.....EW",
         "W.WW.WWWW.W.WWWWWWWW.WWWWW",
         "W........................W",
         "W.WWWWWWWWWW...WWWWWW.WW.W",
@@ -139,7 +139,7 @@ Map::Map(sf::Vector2u windowSize)
         "W.WWWW.WWWCWWW.W.W.WWWWW.W",
         "W............W.W.....W...W",
         "W............W.W...E.W...W",
-        "W......WWWWWWW.W.W.....W.W",
+        "WE.....WWWWWWW.W.W.....W.W",
         "WWWWW.WWWWWWWW.W.WWWW.WW.W",
         "W........................W",
         "W.WW.WWWWWW...WWWWWWWWWW.W",
@@ -356,18 +356,24 @@ sf::Vector2f Map::getMapSize() const {
 }
 
 bool Map::collidesWithWall(const sf::FloatRect& box, bool ignoreClosets) const {
-    for (const auto& w : walls_) {
-        if (box.intersects(w.getGlobalBounds())) return true;
+    if (std::any_of(walls_.begin(), walls_.end(), [&](const sf::RectangleShape& w) {
+        return box.intersects(w.getGlobalBounds());
+    })) {
+        return true;
     }
 
     if (!ignoreClosets) {
-        for (const auto& c : closets_) {
-            if (box.intersects(c.getGlobalBounds())) return true;
+        if (std::any_of(closets_.begin(), closets_.end(), [&](const sf::RectangleShape& c) {
+            return box.intersects(c.getGlobalBounds());
+        })) {
+            return true;
         }
     }
 
-    for (const auto& r : rubbleShapes_) {
-        if (box.intersects(r.getGlobalBounds())) return true;
+    if (std::any_of(rubbleShapes_.begin(), rubbleShapes_.end(), [&](const sf::RectangleShape& r) {
+        return box.intersects(r.getGlobalBounds());
+    })) {
+        return true;
     }
 
     if (currentLevelIndex_ == 2 && box.intersects(generatorShape_.getGlobalBounds())) return true;
@@ -383,15 +389,13 @@ bool Map::reachedWinDoor(const sf::FloatRect& bounds) const {
 }
 
 bool Map::reachedTransitionDoor(const sf::FloatRect& bounds) const {
-    for (const auto& t : transitionShapes_) {
-        if (bounds.intersects(t.getGlobalBounds())) return true;
-    }
-    return false;
+    return std::any_of(transitionShapes_.begin(), transitionShapes_.end(), [&](const sf::RectangleShape& t) {
+        return bounds.intersects(t.getGlobalBounds());
+    });
 }
 
 sf::Vector2f Map::getPlayerSpawn() const { return playerSpawn_; }
 const std::vector<sf::Vector2f>& Map::getEnemySpawns() const { return enemySpawns_; }
-sf::Vector2f Map::getTransitionSpawn() const { return {0.f, 0.f}; }
 
 void Map::draw(sf::RenderWindow& window) const {
     for (const auto& f : floorTiles_) window.draw(f);
@@ -447,8 +451,8 @@ std::vector<sf::Vector2f> Map::findPath(const sf::Vector2f& start, const sf::Vec
 
     visited[startY][startX] = true;
 
-    int dx[] = {0, 0, -1, 1};
-    int dy[] = {-1, 1, 0, 0};
+    const int dx[] = {0, 0, -1, 1};
+    const int dy[] = {-1, 1, 0, 0};
     bool found = false;
 
     while (!q.empty()) {
@@ -519,12 +523,6 @@ std::vector<sf::Vector2f> Map::findPath(const sf::Vector2f& start, const sf::Vec
 bool Map::isShovelTaken() const { return shovelTaken_; }
 void Map::takeShovel() { shovelTaken_ = true; }
 
-bool Map::isRubbleCleared(int index) const {
-    if (currentLevelIndex_ != 2) return true;
-    if (index >= 0 && index < (int)rubbleActive_.size()) return !rubbleActive_[index];
-    return true;
-}
-
 void Map::clearRubble(int index) {
     if (currentLevelIndex_ == 2 && index >= 0 && index < (int)rubbleActive_.size()) {
         rubbleActive_[index] = false;
@@ -579,12 +577,16 @@ bool Map::checkButtonCondition() const {
 }
 
 int Map::getIntersectingButtonIndex(const sf::FloatRect& bounds) const {
-    for (const auto& btn : currentLevelButtons_) {
-        if (bounds.intersects(btn.shape.getGlobalBounds())) return btn.id;
+    auto it = std::find_if(currentLevelButtons_.begin(), currentLevelButtons_.end(),
+        [&](const GameButton& btn) {
+            return bounds.intersects(btn.shape.getGlobalBounds());
+        });
+
+    if (it != currentLevelButtons_.end()) {
+        return it->id;
     }
     return -1;
 }
 
 sf::FloatRect Map::getShovelBounds() const { return shovelShape_.getGlobalBounds(); }
 sf::FloatRect Map::getGeneratorBounds() const { return generatorShape_.getGlobalBounds(); }
-const std::vector<sf::RectangleShape>& Map::getRubbleShapes() const { return rubbleShapes_; }

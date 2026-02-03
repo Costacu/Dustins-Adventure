@@ -1,5 +1,66 @@
 # Dustin's Adventure
-Jocul este centrat in jurul lui Dustin, un personaj din serialul Stranger Things, care trebuie sa scape din Laboratorul din Hawkins, dar laboratorul este plin de Demogorgoni, care il vor prinde daca nu este atent. Jucatorul va trebui sa calatoreasca prin diferite camere de tip labirint si va rezolva puzzle-uri pentru a deschide usa principala a laboratorului, in acelasi timp in care va distrage Demogorgonii folosind budinca de ciocolata, preferata lui Dustin, sau se va ascude de ei in debaralele plasate prin laborator.
+
+**Jocul este centrat în jurul lui Dustin, un personaj din serialul Stranger Things, care trebuie să scape din Laboratorul din Hawkins, 
+dar laboratorul este plin de Demogorgoni, care îl vor prinde dacă nu este atent. Jucătorul va trebui să călătorească prin diferite camere 
+de tip labirint și va rezolva puzzle-uri pentru a deschide ușa principală a laboratorului, în același timp în care va distrage Demogorgonii 
+folosind budincă de ciocolată, preferata lui Dustin, sau se va ascunde de ei în debaralele plasate prin laborator.**
+
+**Dar atentie! Dupa ce treci prin portal, camerele in care vei ajunge sunt oglindite fata de cele prin care ai trecut deja!
+(Pentru ca esti in Upside Down) Pentru a putea iesi din Laborator, trebuie sa deschizi generatorul aflat intr-una dintre camere 
+si sa activezi butoanele in ordinea corecta.**
+
+**Hint: Starea butoanelor dintr-o camera este inversa fata de starea butoanelor din cea de-a doua camera, adica atunci cand un buton din prima camera
+este ON, butonul corespondent din cea de-a doua camera va trebui sa fie OFF.**
+
+## 🎮 Gameplay și Caracteristici
+
+* **Explorare:** Navighează prin 4 niveluri (camere) distincte, fiecare cu propria configurație de labirint.
+* **Demogorgoni:** Ei patrulează coridoarele. Dacă ajungi in raza lor de detectie, te vor urmări. Dacă iesi din acea raza, 
+* se vor întoarce la patrulare.
+* **Debarale:** Ascunde-te în ele pentru a scăpa de Demogorgoni.
+* **Distragere:** Folosește **Budinca de Ciocolată** pentru a distrage Demogorgonii.
+* **Puzzle-uri:**
+  * Găsește **Lopata** pentru a curăța dărâmăturile.
+  * Pornește **Generatorul** pentru a alimenta sistemele.
+  * Activează **Butoanele** în ordinea corectă pentru a debloca ușa finală.
+
+## ⌨️ Controale
+
+| Acțiune | Tastă / Mouse | Descriere |
+| :--- | :---: | :--- |
+| **Mișcare** | `W`, `A`, `S`, `D` | Deplasează personajul (Sus, Stânga, Jos, Dreapta) |
+| **Interacțiune** | `E` | Intră/Iesi din dulap, ia lopata, curăță dărâmături, apasă butoane |
+| **Budincă (Pe loc)** | `Click Stânga` | Lasă o momeală exact unde stai (pentru capcane) |
+| **Budincă (Proiectil)**| `Click Dreapta` | Aruncă o momeală în direcția cursorului |
+| **Resetare** | `R` | Reîncepe jocul (doar după Game Over sau victorie) |
+| **Ieșire** | `ESC` | Închide jocul |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -70,49 +131,3 @@ Jocul este centrat in jurul lui Dustin, un personaj din serialul Stranger Things
 <!-- - [ ] o specializare pe funcție/clasă șablon -->
 - [ ] tag de `git` pe commit cu **toate bifele**: de exemplu `v0.3` sau `v1.0`
 - [ ] code review #3 2 proiecte
-
-## Instrucțiuni de compilare
-
-Proiectul este configurat cu CMake.
-
-Instrucțiuni pentru terminal:
-
-1. Pasul de configurare
-```sh
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
-# sau ./scripts/cmake.sh configure
-```
-
-Sau pe Windows cu GCC folosind Git Bash:
-```sh
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -G Ninja
-# sau ./scripts/cmake.sh configure -g Ninja
-```
-
-La acest pas putem cere să generăm fișiere de proiect pentru diverse medii de lucru.
-
-
-2. Pasul de compilare
-```sh
-cmake --build build --config Debug --parallel 6
-# sau ./scripts/cmake.sh build
-```
-
-Cu opțiunea `parallel` specificăm numărul de fișiere compilate în paralel.
-
-
-3. Pasul de instalare (opțional)
-```sh
-cmake --install build --config Debug --prefix install_dir
-# sau ./scripts/cmake.sh install
-```
-
-Vezi și [`scripts/cmake.sh`](scripts/cmake.sh).
-
-Observație: folderele `build/` și `install_dir/` sunt adăugate în fișierul `.gitignore` deoarece
-conțin fișiere generate și nu ne ajută să le versionăm.
-
-
-## Resurse
-
-- adăugați trimiteri **detaliate** către resursele externe care v-au ajutat sau pe care le-ați folosit

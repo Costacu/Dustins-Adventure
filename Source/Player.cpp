@@ -1,7 +1,6 @@
 #include "../header/Player.h"
-#include "../header/Exceptions.h"
 #include "../header/TextureManager.h"
-#include <filesystem>
+#include <iostream>
 #include <algorithm>
 
 Player::Player(std::string name, int hp, float speed, std::string texturePath)
@@ -11,9 +10,9 @@ Player::Player(std::string name, int hp, float speed, std::string texturePath)
       hp_(hp),
       speed_(speed),
       decoyCount_(5),
+      hasShovel_(false),
       isHidden_(false),
-      isExitingCloset_(false),
-      hasShovel_(false)
+      isExitingCloset_(false)
 {
     loadTexture();
 }
@@ -25,11 +24,12 @@ Player::Player(const Player& other)
       hp_(other.hp_),
       speed_(other.speed_),
       decoyCount_(other.decoyCount_),
+      hasShovel_(other.hasShovel_),
       isHidden_(other.isHidden_),
       isExitingCloset_(other.isExitingCloset_),
-      hasShovel_(other.hasShovel_)
+      map_(other.map_)
 {
-    sprite_ = other.sprite_;
+    loadTexture();
 }
 
 Player& Player::operator=(const Player& other) {
@@ -39,89 +39,70 @@ Player& Player::operator=(const Player& other) {
         texturePath_ = other.texturePath_;
         hp_ = other.hp_;
         speed_ = other.speed_;
-        sprite_ = other.sprite_;
         decoyCount_ = other.decoyCount_;
+        hasShovel_ = other.hasShovel_;
         isHidden_ = other.isHidden_;
         isExitingCloset_ = other.isExitingCloset_;
-        hasShovel_ = other.hasShovel_;
+        map_ = other.map_;
+        loadTexture();
     }
     return *this;
 }
 
 Player::~Player() = default;
 
-[[maybe_unused]] Entity* Player::clone() const {
+Entity* Player::clone() const {
     return new Player(*this);
 }
 
 void Player::print(std::ostream& os) const {
-    os << "Player(name=" << name_
-       << ", hp=" << hp_.get() << "/" << hp_.getMax()
-       << ", speed=" << speed_.get();
+    os << "Player(name=" << name_ << ", decoys=" << decoyCount_ << ", shovel=" << hasShovel_ << ")";
 }
 
-void Player::setMap(const Map* map) {
-    mapRef_ = map;
+sf::FloatRect Player::getBounds() const {
+    sf::FloatRect b = sprite_.getGlobalBounds();
+    float margin = 10.f;
+    return sf::FloatRect(b.left + margin, b.top + margin, b.width - 2 * margin, b.height - 2 * margin);
 }
+
+void Player::setMap(Map* m) { map_ = m; }
 
 void Player::update(float dt) {
     if (isHidden_) return;
 
-    float dx = 0.f;
-    float dy = 0.f;
+    sf::Vector2f movement(0.f, 0.f);
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) movement.y -= 1.f;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) movement.y += 1.f;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) movement.x -= 1.f;
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) movement.x += 1.f;
 
-    float currentSpeed = speed_.get();
+    if (movement.x != 0.f || movement.y != 0.f) {
+        float currentSpeed = speed_.get();
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) dx -= currentSpeed * dt;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) dx += currentSpeed * dt;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) dy -= currentSpeed * dt;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) dy += currentSpeed * dt;
-
-    if (dx == 0.f && dy == 0.f) return;
-
-    if (mapRef_) {
-        move(dx, 0.f);
-        if (mapRef_->collidesWithWall(getBounds(), isExitingCloset_)) {
-            move(-dx, 0.f);
+        move(movement.x * currentSpeed * dt, 0.f);
+        if (map_ && map_->collidesWithWall(getBounds(), isExitingCloset_)) {
+            move(-movement.x * currentSpeed * dt, 0.f);
         }
 
-        move(0.f, dy);
-        if (mapRef_->collidesWithWall(getBounds(), isExitingCloset_)) {
-            move(0.f, -dy);
+        move(0.f, movement.y * currentSpeed * dt);
+        if (map_ && map_->collidesWithWall(getBounds(), isExitingCloset_)) {
+            move(0.f, -movement.y * currentSpeed * dt);
         }
 
-        if (isExitingCloset_) {
-            bool intersectsCloset = false;
-            const auto& closets = mapRef_->getClosets();
-            for (const auto& c : closets) {
-                if (getBounds().intersects(c.getGlobalBounds())) {
-                    intersectsCloset = true;
-                    break;
-                }
-            }
-            if (!intersectsCloset) {
+        if (isExitingCloset_ && map_) {
+            const auto& closets = map_->getClosets();
+            bool stillIntersecting = std::any_of(closets.begin(), closets.end(), [&](const sf::RectangleShape& c) {
+                return getBounds().intersects(c.getGlobalBounds());
+            });
+
+            if (!stillIntersecting) {
                 isExitingCloset_ = false;
             }
         }
-    } else {
-        move(dx, dy);
     }
 }
 
-void Player::reset() {
-    hp_.reset();
-    decoyCount_ = 5;
-    isHidden_ = false;
-    isExitingCloset_ = false;
-    hasShovel_ = false;
-    setPosition(0.f, 0.f);
-    sprite_.setColor(sf::Color::White);
-}
-
-void Player::draw(sf::RenderWindow& window) const {
-    Entity::draw(window);
-}
-
+void Player::addDecoys(int count) { decoyCount_ += count; }
 bool Player::useDecoy() {
     if (decoyCount_ > 0) {
         decoyCount_--;
@@ -129,45 +110,34 @@ bool Player::useDecoy() {
     }
     return false;
 }
+int Player::getDecoyCount() const { return decoyCount_; }
 
-int Player::getDecoyCount() const {
-    return decoyCount_;
-}
-
-void Player::addDecoys(int count) {
-    decoyCount_ += count;
-    if (decoyCount_ > 5) decoyCount_ = 5;
-}
-
-void Player::setHidden(bool hidden) {
-    isHidden_ = hidden;
-    if (isHidden_) {
-        sprite_.setColor(sf::Color(100, 100, 100, 150));
-    } else {
-        sprite_.setColor(sf::Color::White);
-    }
-}
-
-bool Player::isHidden() const {
-    return isHidden_;
-}
-
-void Player::setExitingCloset(bool exiting) {
-    isExitingCloset_ = exiting;
-}
-
-bool Player::isExitingCloset() const {
-    return isExitingCloset_;
-}
-
-bool Player::hasShovel() const { return hasShovel_; }
 void Player::collectShovel() { hasShovel_ = true; }
+bool Player::hasShovel() const { return hasShovel_; }
+
+void Player::setHidden(bool h) {
+    isHidden_ = h;
+    if (isHidden_) sprite_.setColor(sf::Color(255, 255, 255, 100));
+    else sprite_.setColor(sf::Color::White);
+}
+bool Player::isHidden() const { return isHidden_; }
+
+void Player::setExitingCloset(bool e) { isExitingCloset_ = e; }
+
+void Player::reset() {
+    hp_.reset();
+    decoyCount_ = 5;
+    hasShovel_ = false;
+    isHidden_ = false;
+    isExitingCloset_ = false;
+    sprite_.setColor(sf::Color::White);
+    setPosition(0.f, 0.f);
+}
 
 void Player::loadTexture() {
     sf::Texture& tex = TextureManager::getInstance().getTexture(texturePath_);
-    sprite_.setTexture(tex, true);
+    sprite_.setTexture(tex);
 
     auto sz = tex.getSize();
     sprite_.setScale(48.f / sz.x, 48.f / sz.y);
-    sprite_.setPosition(pos_.getX(), pos_.getY());
 }
