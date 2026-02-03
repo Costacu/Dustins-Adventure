@@ -8,6 +8,7 @@
 #include "Enemy.h"
 #include "Decoy.h"
 #include <vector>
+#include <memory>
 
 class GameEngine {
 public:
@@ -43,9 +44,10 @@ private:
     bool playerWon_;
 
     Player player_;
-    Enemy enemy_;
+
+    std::vector<std::unique_ptr<Entity>> entities_;
+
     Map map_;
-    std::vector<Decoy> decoys_;
 
     sf::Font uiFont_;
     sf::Text uiText_;

@@ -4,6 +4,7 @@
 #include "../header/GameTemplates.h"
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 
 GameEngine::GameEngine(unsigned int width, unsigned int height, const std::string& title)
     : window_(sf::VideoMode::getDesktopMode(), title, sf::Style::Default),
@@ -11,7 +12,6 @@ GameEngine::GameEngine(unsigned int width, unsigned int height, const std::strin
       gameOver_(false),
       playerWon_(false),
       player_(EntityFactory::createPlayer()),
-      enemy_(EntityFactory::createEnemy()),
       map_({width, height})
 {
     window_.setPosition(sf::Vector2i(0, 0));
@@ -19,9 +19,14 @@ GameEngine::GameEngine(unsigned int width, unsigned int height, const std::strin
     std::cout << "Entities: " << Entity::getEntityCount() << "\n";
 
     player_.setMap(&map_);
-
     player_.setPosition(map_.getPlayerSpawn().x, map_.getPlayerSpawn().y);
-    enemy_.setPosition(map_.getEnemySpawn().x, map_.getEnemySpawn().y);
+
+    const auto& spawns = map_.getEnemySpawns();
+    for (const auto& pos : spawns) {
+        auto enemy = std::make_unique<Enemy>(EntityFactory::createEnemy());
+        enemy->setPosition(pos.x, pos.y);
+        entities_.push_back(std::move(enemy));
+    }
 
     if (!decoyTexture_.loadFromFile("textures/Budinca.png")) {
         decoyTexture_.loadFromFile("../textures/Budinca.png");
@@ -56,7 +61,6 @@ void GameEngine::processEvents() {
                 throwProjectileDecoy();
             }
         }
-
         if (e.type == sf::Event::Closed) {
             window_.close();
             isRunning_ = false;
@@ -67,9 +71,7 @@ void GameEngine::processEvents() {
                 isRunning_ = false;
             }
             if (e.key.code == sf::Keyboard::R) {
-                if (gameOver_) {
-                    reset();
-                }
+                if (gameOver_) reset();
             }
             if (e.key.code == sf::Keyboard::E) {
                 tryInteract();
@@ -100,7 +102,6 @@ void GameEngine::updateView() {
         float offset = (1.f - scale) / 2.f;
         gameView_.setViewport(sf::FloatRect(0.f, offset, 1.f, scale));
     }
-
     window_.setView(gameView_);
 }
 
@@ -108,51 +109,61 @@ void GameEngine::update(float dt) {
     if (gameOver_) return;
 
     player_.update(dt);
-    enemy_.update(dt);
 
-    auto oldE = enemy_.getPosition();
+    for (auto& entityPtr : entities_) {
+        entityPtr->update(dt);
 
-    enemy_.updateAI(dt,
-                    sf::Vector2f(player_.getPosition().getX(), player_.getPosition().getY()),
-                    map_,
-                    player_.isHidden());
+        if (auto* enemy = dynamic_cast<Enemy*>(entityPtr.get())) {
+            auto oldPos = enemy->getPosition();
 
-    if (map_.collidesWithWall(enemy_.getBounds())) {
-        enemy_.setPosition(oldE.getX(), oldE.getY());
-    }
+            enemy->updateAI(dt,
+                            sf::Vector2f(player_.getPosition().getX(), player_.getPosition().getY()),
+                            map_,
+                            player_.isHidden());
 
-    for (auto& d : decoys_) d.update(dt, map_);
-    decoys_.erase(std::remove_if(decoys_.begin(), decoys_.end(),
-        [](const Decoy& d){ return !d.active(); }), decoys_.end());
-
-    if (!decoys_.empty()) {
-        float bestDistSq = std::numeric_limits<float>::max();
-        sf::Vector2f bestPos = {0.f, 0.f};
-        bool found = false;
-
-        float detectionRangeSq = 450.f * 450.f;
-
-        for (const auto& d : decoys_) {
-            if (!d.active()) continue;
-
-            sf::Vector2f dp = d.position();
-            sf::Vector2f ep(enemy_.getPosition().getX(), enemy_.getPosition().getY());
-
-            float distSq = math::getDistSq(dp, ep);
-
-            if (distSq < detectionRangeSq) {
-                if (distSq < bestDistSq) {
-                    bestDistSq = distSq;
-                    bestPos = d.position();
-                    found = true;
-                }
+            if (map_.collidesWithWall(enemy->getBounds())) {
+                enemy->setPosition(oldPos.getX(), oldPos.getY());
             }
         }
+    }
 
-        if (found) {
-            enemy_.distractTo(bestPos, 0.2f);
+    entities_.erase(std::remove_if(entities_.begin(), entities_.end(),
+        [](const std::unique_ptr<Entity>& e) {
+            if (auto* decoy = dynamic_cast<Decoy*>(e.get())) {
+                return !decoy->active();
+            }
+            return false;
+        }), entities_.end());
+
+    for (auto& entEnemy : entities_) {
+        if (auto* enemy = dynamic_cast<Enemy*>(entEnemy.get())) {
+            float bestDistSq = std::numeric_limits<float>::max();
+            sf::Vector2f bestPos = {0.f, 0.f};
+            bool foundDecoy = false;
+            float detectionRangeSq = 450.f * 450.f;
+
+            for (const auto& entDecoy : entities_) {
+                if (auto* decoy = dynamic_cast<Decoy*>(entDecoy.get())) {
+                    if (!decoy->active()) continue;
+
+                    sf::Vector2f dp(decoy->getPosition().getX(), decoy->getPosition().getY());
+                    sf::Vector2f ep(enemy->getPosition().getX(), enemy->getPosition().getY());
+
+                    float distSq = math::getDistSq(dp, ep);
+                    if (distSq < detectionRangeSq && distSq < bestDistSq) {
+                        bestDistSq = distSq;
+                        bestPos = dp;
+                        foundDecoy = true;
+                    }
+                }
+            }
+
+            if (foundDecoy) {
+                enemy->distractTo(bestPos, 0.2f);
+            }
         }
     }
+
     checkCollisions();
     checkWinCondition();
 }
@@ -162,9 +173,12 @@ void GameEngine::render() {
 
     window_.setView(gameView_);
     map_.draw(window_);
-    for (const auto& d : decoys_) d.draw(window_);
+
+    for (const auto& e : entities_) {
+        e->draw(window_);
+    }
+
     player_.draw(window_);
-    enemy_.draw(window_);
 
     window_.setView(window_.getDefaultView());
 
@@ -180,7 +194,6 @@ void GameEngine::render() {
     if (gameOver_) {
         window_.draw(overlay_);
         window_.draw(uiText_);
-        window_.draw(uiText_);
     }
 
     window_.display();
@@ -191,12 +204,17 @@ void GameEngine::reset() {
     playerWon_ = false;
 
     map_.resetToFirstLevel();
-
     player_.reset();
-    enemy_.reset();
-    decoys_.clear();
+
+    entities_.clear();
     player_.setPosition(map_.getPlayerSpawn().x, map_.getPlayerSpawn().y);
-    enemy_.setPosition(map_.getEnemySpawn().x, map_.getEnemySpawn().y);
+
+    const auto& spawns = map_.getEnemySpawns();
+    for (const auto& pos : spawns) {
+        auto e = std::make_unique<Enemy>(EntityFactory::createEnemy());
+        e->setPosition(pos.x, pos.y);
+        entities_.push_back(std::move(e));
+    }
 
     updateView();
 }
@@ -205,67 +223,17 @@ void GameEngine::checkCollisions() {
     if (player_.isHidden()) return;
 
     sf::FloatRect pB = player_.getBounds();
-    sf::FloatRect eB = enemy_.getBounds();
-    if (pB.intersects(eB)) {
-        gameOver_ = true;
-        playerWon_ = false;
-        updateOverlayText("You Died!", "Press R to retry");
-    }
-}
 
-void GameEngine::checkWinCondition() {
-    if (map_.reachedTransitionDoor(player_.getBounds())) {
-        int current = map_.getCurrentLevel();
-        int next = current;
-        sf::Vector2f spawnPos;
-
-        sf::Vector2f pCenter = {
-             player_.getBounds().left + player_.getBounds().width/2,
-             player_.getBounds().top + player_.getBounds().height/2
-        };
-        sf::Vector2f mapSize = map_.getMapSize();
-
-        if (current == 0) {
-            if (pCenter.y < 200.f) {
-                next = 3;
-                spawnPos = {mapSize.x / 2.f, mapSize.y - 200.f};
-            } else {
-                next = 1;
-                spawnPos = {70.f, mapSize.y / 2.f};
+    for (const auto& e : entities_) {
+        if (auto* enemy = dynamic_cast<Enemy*>(e.get())) {
+            sf::FloatRect eB = enemy->getBounds();
+            if (pB.intersects(eB)) {
+                gameOver_ = true;
+                playerWon_ = false;
+                updateOverlayText("Ai fost mancat de Demogorgon!", "Apasa tasta R pentru a incerca din nou");
+                return;
             }
         }
-        else if (current == 1) {
-            if (pCenter.y < 200.f) {
-                next = 2;
-                spawnPos = {mapSize.x / 2.f, mapSize.y - 200.f};
-            }
-            else {
-                next = 0;
-                spawnPos = {mapSize.x - 150.f, mapSize.y / 2.f};
-            }
-        }
-        else if (current == 2) {
-            next = 1;
-            spawnPos = {mapSize.x / 2.f, 90.f};
-        }
-        else if (current == 3) {
-            next = 0;
-            spawnPos = {mapSize.x / 2.f, 75.f};
-        }
-
-        map_.loadLevel(next);
-        player_.setPosition(spawnPos.x, spawnPos.y);
-
-        enemy_.reset();
-        enemy_.setPosition(map_.getEnemySpawn().x, map_.getEnemySpawn().y);
-        decoys_.clear();
-        updateView();
-    }
-
-    if (map_.reachedWinDoor(player_.getBounds())) {
-        gameOver_ = true;
-        playerWon_ = true;
-        updateOverlayText("You Win!", "Press R to play again");
     }
 }
 
@@ -316,10 +284,8 @@ void GameEngine::setupUI() {
 void GameEngine::updateOverlayText(const std::string& titleLine, const std::string& hintLine) {
     std::string msg = titleLine + "\n" + hintLine;
     uiText_.setString(msg);
-
     sf::FloatRect bounds = uiText_.getLocalBounds();
     uiText_.setOrigin(bounds.left + bounds.width / 2.f, bounds.top + bounds.height / 2.f);
-
     sf::Vector2u winSize = window_.getSize();
     uiText_.setPosition(static_cast<float>(winSize.x) / 2.f, static_cast<float>(winSize.y) / 2.f);
 }
@@ -332,9 +298,11 @@ void GameEngine::throwStaticDecoy() {
         sf::Vector2f center(bounds.left + bounds.width / 2.f,
                             bounds.top + bounds.height / 2.f);
 
-        Decoy d;
-        d.spawn(center, decoyLifetime_);
-        decoys_.push_back(d);
+        auto d = std::make_unique<Decoy>();
+        d->setMap(&map_);
+        d->spawn(center, decoyLifetime_);
+
+        entities_.push_back(std::move(d));
     }
 }
 
@@ -355,9 +323,11 @@ void GameEngine::throwProjectileDecoy() {
 
         float speed = 400.f;
 
-        Decoy d;
-        d.spawn(startPos, decoyLifetime_, dir * speed);
-        decoys_.push_back(d);
+        auto d = std::make_unique<Decoy>();
+        d->setMap(&map_);
+        d->spawn(startPos, decoyLifetime_, dir * speed);
+
+        entities_.push_back(std::move(d));
     }
 }
 
@@ -438,5 +408,66 @@ void GameEngine::tryInteract() {
                 return;
             }
         }
+    }
+}
+
+void GameEngine::checkWinCondition() {
+    if (map_.reachedTransitionDoor(player_.getBounds())) {
+        int current = map_.getCurrentLevel();
+        int next = current;
+        sf::Vector2f spawnPos;
+
+        sf::Vector2f pCenter = {
+             player_.getBounds().left + player_.getBounds().width/2,
+             player_.getBounds().top + player_.getBounds().height/2
+        };
+        sf::Vector2f mapSize = map_.getMapSize();
+
+        if (current == 0) {
+            if (pCenter.y < 200.f) {
+                next = 3;
+                spawnPos = {mapSize.x / 2.f, mapSize.y - 200.f};
+            } else {
+                next = 1;
+                spawnPos = {70.f, mapSize.y / 2.f};
+            }
+        }
+        else if (current == 1) {
+            if (pCenter.y < 200.f) {
+                next = 2;
+                spawnPos = {mapSize.x / 2.f, mapSize.y - 200.f};
+            }
+            else {
+                next = 0;
+                spawnPos = {mapSize.x - 150.f, mapSize.y / 2.f};
+            }
+        }
+        else if (current == 2) {
+            next = 1;
+            spawnPos = {mapSize.x / 2.f, 90.f};
+        }
+        else if (current == 3) {
+            next = 0;
+            spawnPos = {mapSize.x / 2.f, 75.f};
+        }
+
+        map_.loadLevel(next);
+        player_.setPosition(spawnPos.x, spawnPos.y);
+
+        entities_.clear();
+        const auto& spawns = map_.getEnemySpawns();
+        for (const auto& pos : spawns) {
+            auto e = std::make_unique<Enemy>(EntityFactory::createEnemy());
+            e->setPosition(pos.x, pos.y);
+            entities_.push_back(std::move(e));
+        }
+
+        updateView();
+    }
+
+    if (map_.reachedWinDoor(player_.getBounds())) {
+        gameOver_ = true;
+        playerWon_ = true;
+        updateOverlayText("Ai iesit din Laboratorul din Hawkins!", "Apasa tasta R pentru a juca din nou sau Esc pentru a iesi din joc");
     }
 }

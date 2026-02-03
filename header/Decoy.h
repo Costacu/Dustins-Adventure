@@ -3,25 +3,29 @@
 #define DECOY_H
 
 #include <SFML/Graphics.hpp>
+#include "Entity.h"
 #include "Map.h"
 
-class Decoy {
+class Decoy : public Entity {
 public:
     Decoy();
-    ~Decoy();
+    ~Decoy() override;
+
+    Entity* clone() const override;
+    void print(std::ostream& os) const override;
+    void update(float dt) override;
+    void draw(sf::RenderWindow& window) const override;
+    sf::FloatRect getBounds() const override;
 
     void spawn(const sf::Vector2f& pos, float duration, const sf::Vector2f& velocity = {0.f, 0.f});
-    void update(float dt, const Map& map);
-    void draw(sf::RenderWindow& window) const;
-
     bool active() const;
-    sf::Vector2f position() const;
+    void setMap(const Map* map);
 
 private:
-    sf::CircleShape shape_;
     sf::Vector2f velocity_;
     float lifetime_;
     bool active_;
+    const Map* mapRef_ = nullptr;
 
     static sf::Texture texture_;
     static bool textureLoaded_;

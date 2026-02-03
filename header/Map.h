@@ -24,7 +24,7 @@ public:
     bool reachedTransitionDoor(const sf::FloatRect& bounds) const;
 
     sf::Vector2f getPlayerSpawn() const;
-    sf::Vector2f getEnemySpawn() const;
+    const std::vector<sf::Vector2f>& getEnemySpawns() const;
     sf::Vector2f getTransitionSpawn() const;
 
     sf::Vector2f getMapSize() const;
@@ -86,7 +86,7 @@ private:
     sf::Texture doorTexture_;
 
     sf::Vector2f playerSpawn_;
-    sf::Vector2f enemySpawn_;
+    std::vector<sf::Vector2f> enemySpawns_;
 
     sf::RectangleShape background_;
 

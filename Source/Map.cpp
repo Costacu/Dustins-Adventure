@@ -112,22 +112,22 @@ Map::Map(sf::Vector2u windowSize)
 
     std::vector<std::string> level3 = {
         "WWWWWWWWWWWWWWWWWWWWWWWWWW",
-        "W.S.......W...C........B.W",
-        "W.WWWWW.W.W.WWWWWWW.WWWW.W",
-        "W.W.....W.W.W.....R......W",
-        "W.W.....W.W.W..G..R......W",
+        "W.S....................B.W",
+        "W.WWWWW.W.W.WWWCWWW.WWWW.W",
+        "W.W.....W.W.R.....R......W",
+        "W.W.E...W.W.W..G..R......W",
         "W.W.....W.W.WWWWWWW......W",
-        "W.WWWWWWWWWWWWWWWWWW.WWWWW",
+        "W.WW.WWWW.W.WWWWWWWW.WWWWW",
         "W........................W",
-        "W.WWWWWWWWWWWWWWWWWWWWWW.W",
+        "W.WWWWWWWWWW...WWWWWW.WW.W",
         "W.W.........E..........W.W",
-        "W.W.WWWWWWWWWWWWWWWWWW.W.W",
-        "W.W.W................W.W.W",
-        "W.W.W.WWWWWWWWWWWWWW.W.W.W",
-        "W.W.W.W............W.W.W.W",
+        "W.W.WW.WWWWWWWWWWWWW.W.W.W",
+        "W.W.W................W...W",
+        "W.W.W.WWWWWWWWWWWWWW...WWW",
+        "W...W.W............W.W.W.W",
         "W.W.W.W.WWWWWWWWWW.W.W.W.W",
         "W.W...W..........W.W.W.W.W",
-        "W.WWWWW.WWWWWWWW.W.W.W.W.W",
+        "W.WW.WW.WWWWWWWW.W.W.W.W.W",
         "W.................B..W...W",
         "WWWWWWWWWWWWWTWWWWWWWWWWWW",
         "WWWWWWWWWWWWWWWWWWWWWWWWWW"
@@ -135,22 +135,22 @@ Map::Map(sf::Vector2u windowSize)
 
     std::vector<std::string> level4 = {
         "WWWWWWWWWWWWWWWWWWWWWWWWWW",
-        "W.B........C...W.........W",
-        "W.WWWW.WWWWWWW.W.W.WWWWW.W",
-        "W..............W.W.....W.W",
-        "W..............W.W.....W.W",
+        "W.B......................W",
+        "W.WWWW.WWWCWWW.W.W.WWWWW.W",
+        "W............W.W.....W...W",
+        "W............W.W...E.W...W",
         "W......WWWWWWW.W.W.....W.W",
-        "WWWWW.WWWWWWWWWWWWWWWWWW.W",
+        "WWWWW.WWWWWWWW.W.WWWW.WW.W",
         "W........................W",
-        "W.WWWWWWWWWWWWWWWWWWWWWW.W",
-        "W.W.........E..........W.W",
-        "W.W.WWWWWWWWWWWWWWWWWW.W.W",
-        "W.W.W................W.W.W",
-        "W.W.W.WWWWWWWWWWWWWW.W.W.W",
-        "W.W.W.W............W.W.W.W",
+        "W.WW.WWWWWW...WWWWWWWWWW.W",
+        "W.W..........E.........W.W",
+        "W.W.W.WWWWWWWWWWWWW.WW.W.W",
+        "W...W................W.W.W",
+        "WWW...WWWWWWWWWWWWWW.W.W.W",
+        "W.W.W.W............W.W...W",
         "W.W.W.W.WWWWWWWWWW.W.W.W.W",
         "W.W.W.W.W..........W...W.W",
-        "W.W.W.W.W.WWWWWWWW.WWWWW.W",
+        "W.W.W.W.W.WWWWWWWW.WW.WW.W",
         "W...W..B.................W",
         "WWWWWWWWWWWWWTWWWWWWWWWWWW",
         "WWWWWWWWWWWWWWWWWWWWWWWWWW"
@@ -174,6 +174,7 @@ void Map::buildMap() {
     closetVisited_.clear();
     rubbleShapes_.clear();
     currentLevelButtons_.clear();
+    enemySpawns_.clear();
 
     winDoorBounds_ = sf::FloatRect(0,0,0,0);
     winDoorShape_.setPosition(-1000, -1000);
@@ -213,7 +214,7 @@ void Map::buildMap() {
                 playerSpawn_ = {x + TILE/4, y + TILE/4};
             }
             else if (tile == 'E') {
-                enemySpawn_ = {x + TILE/4, y + TILE/4};
+                enemySpawns_.push_back({x + TILE/4, y + TILE/4});
             }
             else if (tile == 'D') {
                 winDoorShape_.setSize({TILE, TILE});
@@ -389,7 +390,7 @@ bool Map::reachedTransitionDoor(const sf::FloatRect& bounds) const {
 }
 
 sf::Vector2f Map::getPlayerSpawn() const { return playerSpawn_; }
-sf::Vector2f Map::getEnemySpawn() const { return enemySpawn_; }
+const std::vector<sf::Vector2f>& Map::getEnemySpawns() const { return enemySpawns_; }
 sf::Vector2f Map::getTransitionSpawn() const { return {0.f, 0.f}; }
 
 void Map::draw(sf::RenderWindow& window) const {
