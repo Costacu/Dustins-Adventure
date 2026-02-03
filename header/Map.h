@@ -6,6 +6,12 @@
 #include <vector>
 #include <string>
 
+struct GameButton {
+    sf::RectangleShape shape;
+    int id;
+    bool active;
+};
+
 class Map {
 public:
     explicit Map(sf::Vector2u windowSize = {800, 600});
@@ -13,31 +19,79 @@ public:
 
     void draw(sf::RenderWindow& window) const;
 
-    bool reachedDoor(const sf::FloatRect& bounds) const;
+    bool reachedWinDoor(const sf::FloatRect& bounds) const;
+    bool reachedTransitionDoor(const sf::FloatRect& bounds) const;
 
     sf::Vector2f getPlayerSpawn() const;
     sf::Vector2f getEnemySpawn() const;
+    sf::Vector2f getTransitionSpawn() const;
 
-    bool collidesWithWall(const sf::FloatRect& box) const;
+    sf::Vector2f getMapSize() const;
+
+    bool collidesWithWall(const sf::FloatRect& box, bool ignoreClosets = false) const;
+
+    const std::vector<sf::RectangleShape>& getClosets() const;
+    bool isClosetVisited(size_t index) const;
+    void markClosetVisited(size_t index);
+
+    std::vector<sf::Vector2f> findPath(const sf::Vector2f& start, const sf::Vector2f& target) const;
+
+    void loadLevel(int index);
+    void resetToFirstLevel();
+    int getCurrentLevel() const;
+
+    bool isShovelTaken() const;
+    void takeShovel();
+
+    bool isRubbleCleared(int index) const;
+    void clearRubble(int index);
+    int getIntersectingRubbleIndex(const sf::FloatRect& bounds) const;
+
+    bool isGeneratorOn() const;
+    void turnOnGenerator();
+
+    void toggleButton(int id);
+    bool checkButtonCondition() const;
+    int getIntersectingButtonIndex(const sf::FloatRect& bounds) const;
+
+    sf::FloatRect getShovelBounds() const;
+    sf::FloatRect getGeneratorBounds() const;
+    const std::vector<sf::RectangleShape>& getRubbleShapes() const;
 
 private:
-    void rebuildPlayArea();
     void buildMap();
 
     sf::Vector2u windowSize_;
-    float margin_;
-    sf::FloatRect playArea_;
-
     std::vector<std::string> grid_;
     std::vector<sf::RectangleShape> walls_;
 
-    sf::RectangleShape doorShape_;
-    sf::FloatRect doorBounds_;
+    std::vector<sf::RectangleShape> closets_;
+    std::vector<bool> closetVisited_;
+
+    sf::RectangleShape winDoorShape_;
+    sf::FloatRect winDoorBounds_;
+
+    std::vector<sf::RectangleShape> transitionShapes_;
 
     sf::Vector2f playerSpawn_;
     sf::Vector2f enemySpawn_;
 
     sf::RectangleShape background_;
+
+    std::vector<std::vector<std::string>> levels_;
+    int currentLevelIndex_ = 0;
+
+    sf::RectangleShape shovelShape_;
+    bool shovelTaken_ = false;
+
+    std::vector<sf::RectangleShape> rubbleShapes_;
+    std::vector<bool> rubbleActive_;
+
+    sf::RectangleShape generatorShape_;
+    bool generatorOn_ = false;
+
+    std::vector<GameButton> currentLevelButtons_;
+    std::vector<bool> globalButtonStates_;
 
     static constexpr float TILE = 70.f;
 };

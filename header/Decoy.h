@@ -1,29 +1,28 @@
 #pragma once
 #ifndef DECOY_H
 #define DECOY_H
-#include <SFML/Graphics.hpp>
-#include "Entity.h"
 
-class Decoy : public Entity {
+#include <SFML/Graphics.hpp>
+#include "Map.h"
+
+class Decoy {
 public:
     Decoy();
 
-    void spawn(const sf::Vector2f& playerCenter, float lifetime);
-
-    void update(float dt) override;
-    void print(std::ostream& os) const override;
-    Entity* clone() const override;
+    void spawn(const sf::Vector2f& position, float duration, const sf::Vector2f& velocity = {0.f, 0.f});
+    void update(float dt, const Map& map);
+    void draw(sf::RenderWindow& window) const;
 
     bool active() const;
-    const sf::Vector2f& position() const;
-
-    void draw(sf::RenderWindow& window) const override;
+    sf::Vector2f position() const;
 
 private:
-    float lifetime_;
-    float radius_;
     sf::CircleShape shape_;
+    float timer_;
+    bool isActive_;
+
+    sf::Vector2f velocity_;
+    bool isMoving_;
 };
 
-
-#endif // DECOY_H
+#endif

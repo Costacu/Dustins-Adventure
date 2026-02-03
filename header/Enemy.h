@@ -4,8 +4,10 @@
 
 #include <SFML/Graphics.hpp>
 #include <string>
+#include <vector>
 #include "Entity.h"
 #include "Map.h"
+#include "GameTemplates.h"
 
 class Enemy : public Entity {
 public:
@@ -22,17 +24,19 @@ public:
     void print(std::ostream& os) const override;
 
     void update(float dt) override;
-    void updateAI(float dt, const sf::Vector2f& playerPos, const Map& map);
+    void updateAI(float dt, const sf::Vector2f& playerPos, const Map& map, bool isPlayerHidden);
+
+    sf::FloatRect getBounds() const override;
 
     void distractTo(const sf::Vector2f& pos, float seconds);
     void reset();
 
 private:
     std::string name_;
-    int hp_;
-    int maxHp_;
-    float speed_;
     std::string texturePath_;
+
+    GameProperty<int> hp_;
+    GameProperty<float> speed_;
 
     enum class State { Patrol, Chase };
     State state_ = State::Patrol;
@@ -43,9 +47,14 @@ private:
     float distractTimer_ = 0.f;
     sf::Vector2f distractPos_;
 
+    std::vector<sf::Vector2f> path_;
+    float pathTimer_ = 0.f;
+    float stuckTimer_ = 0.f;
+    sf::Vector2f lastPos_;
+
     bool detectPlayer(const sf::Vector2f& playerPos) const;
     void patrol(float dt, const Map& map);
-    void chase(float dt, const sf::Vector2f& playerPos, const Map& map);
+    void chase(float dt, const sf::Vector2f& targetPos, const Map& map);
 
     void loadTexture();
 };

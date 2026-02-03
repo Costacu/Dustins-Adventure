@@ -75,6 +75,10 @@ add_executable(${PROJECT_NAME}
         header/Decoy.h
         header/Exceptions.h
         header/EntityPointer.h
+        header/GameTemplates.h
+        Source/TextureManager.cpp
+        header/TextureManager.h
+        header/EntityFactory.h
 )
 
 include(cmake/CompilerFlags.cmake)

@@ -3,6 +3,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include "GameTemplates.h"
 
 class Entity {
 public:
@@ -22,6 +23,7 @@ public:
 
     virtual void update(float dt) = 0;
     [[maybe_unused]] virtual Entity* clone() const = 0;
+
     Entity(float x = 0.f, float y = 0.f);
 
     virtual void print(std::ostream& os) const = 0;
@@ -42,9 +44,9 @@ public:
 
 protected:
     Position pos_;
-    sf::Texture texture_;
     sf::Sprite sprite_;
+
     static int entityCount;
 };
 
-#endif //ENTITY_H
+#endif
