@@ -14,7 +14,7 @@ este ON, butonul corespondent din cea de-a doua camera va trebui sa fie OFF.**
 
 ## 🎮 Gameplay și Caracteristici
 
-* **Explorare:** Navighează prin 4 niveluri (camere) distincte, fiecare cu propria configurație de labirint.
+* **Explorare:** Navighează prin 4 camere.
 * **Demogorgoni:** Ei patrulează coridoarele. Dacă ajungi in raza lor de detectie, te vor urmări. Dacă iesi din acea raza, 
 * se vor întoarce la patrulare.
 * **Debarale:** Ascunde-te în ele pentru a scăpa de Demogorgoni.
