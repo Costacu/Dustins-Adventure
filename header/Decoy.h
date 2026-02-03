@@ -11,7 +11,6 @@ public:
     Decoy();
     ~Decoy() override;
 
-    Entity* clone() const override;
     void print(std::ostream& os) const override;
     void update(float dt) override;
     void draw(sf::RenderWindow& window) const override;

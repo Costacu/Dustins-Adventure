@@ -21,10 +21,6 @@ Decoy::Decoy() : Entity(0.f, 0.f), lifetime_(0.f), active_(false) {
 
 Decoy::~Decoy() = default;
 
-Entity* Decoy::clone() const {
-    return new Decoy(*this);
-}
-
 void Decoy::print(std::ostream& os) const {
     os << "Decoy(active=" << active_ << ", time=" << lifetime_ << ")";
 }

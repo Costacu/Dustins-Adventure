@@ -65,9 +65,6 @@ Enemy& Enemy::operator=(const Enemy& other) {
 
 Enemy::~Enemy() {}
 
-[[maybe_unused]] Entity* Enemy::clone() const {
-    return new Enemy(*this);
-}
 
 void Enemy::print(std::ostream& os) const {
     os << "Enemy(name=" << name_ << ", speed=" << speed_.get() << ")";

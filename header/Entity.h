@@ -22,7 +22,6 @@ public:
     };
 
     virtual void update(float dt) = 0;
-    [[maybe_unused]] virtual Entity* clone() const = 0;
 
     Entity(float x = 0.f, float y = 0.f);
 

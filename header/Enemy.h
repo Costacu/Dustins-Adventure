@@ -20,7 +20,6 @@ public:
     Enemy& operator=(const Enemy& other);
     ~Enemy() override;
 
-    Entity* clone() const override;
     void print(std::ostream& os) const override;
 
     void update(float dt) override;
