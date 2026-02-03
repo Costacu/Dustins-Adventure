@@ -65,7 +65,7 @@ Enemy& Enemy::operator=(const Enemy& other) {
 
 Enemy::~Enemy() {}
 
-Entity* Enemy::clone() const {
+[[maybe_unused]] Entity* Enemy::clone() const {
     return new Enemy(*this);
 }
 
