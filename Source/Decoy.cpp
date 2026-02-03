@@ -1,53 +1,57 @@
 #include "../header/Decoy.h"
 
-Decoy::Decoy()
-    : timer_(0.f), isActive_(false), velocity_(0.f, 0.f), isMoving_(false)
-{
-    shape_.setRadius(10.f);
-    shape_.setFillColor(sf::Color::White);
-    shape_.setOrigin(10.f, 10.f);
+sf::Texture Decoy::texture_;
+bool Decoy::textureLoaded_ = false;
+
+Decoy::Decoy() : lifetime_(0.f), active_(false) {
+    if (!textureLoaded_) {
+        if (!texture_.loadFromFile("textures/Budinca.png")) {
+            texture_.loadFromFile("../textures/Budinca.png");
+        }
+        textureLoaded_ = true;
+    }
+
+    shape_.setRadius(20.f);
+    shape_.setOrigin(20.f, 20.f);
+
+    shape_.setTexture(&texture_);
 }
 
-void Decoy::spawn(const sf::Vector2f& pos, float duration, const sf::Vector2f& vel) {
+Decoy::~Decoy() = default;
+
+void Decoy::spawn(const sf::Vector2f& pos, float duration, const sf::Vector2f& velocity) {
+    active_ = true;
+    lifetime_ = duration;
     shape_.setPosition(pos);
-    timer_ = duration;
-    isActive_ = true;
-    velocity_ = vel;
-    isMoving_ = (std::abs(vel.x) > 0.1f || std::abs(vel.y) > 0.1f);
+    velocity_ = velocity;
 }
 
 void Decoy::update(float dt, const Map& map) {
-    if (!isActive_) return;
+    if (!active_) return;
 
-    if (isMoving_) {
+    lifetime_ -= dt;
+    if (lifetime_ <= 0.f) {
+        active_ = false;
+        return;
+    }
+
+    if (velocity_.x != 0.f || velocity_.y != 0.f) {
         sf::Vector2f nextPos = shape_.getPosition() + velocity_ * dt;
+        sf::FloatRect nextBounds(nextPos.x - 30.f, nextPos.y - 30.f, 60.f, 60.f);
 
-        sf::FloatRect bounds(nextPos.x - 5.f, nextPos.y - 5.f, 10.f, 10.f);
-
-        if (map.collidesWithWall(bounds)) {
-            isMoving_ = false;
+        if (map.collidesWithWall(nextBounds, true)) {
             velocity_ = {0.f, 0.f};
         } else {
             shape_.setPosition(nextPos);
         }
     }
-
-    timer_ -= dt;
-    if (timer_ <= 0.f) {
-        isActive_ = false;
-    }
 }
 
 void Decoy::draw(sf::RenderWindow& window) const {
-    if (isActive_) {
+    if (active_) {
         window.draw(shape_);
     }
 }
 
-bool Decoy::active() const {
-    return isActive_;
-}
-
-sf::Vector2f Decoy::position() const {
-    return shape_.getPosition();
-}
+bool Decoy::active() const { return active_; }
+sf::Vector2f Decoy::position() const { return shape_.getPosition(); }

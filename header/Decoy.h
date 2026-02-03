@@ -8,8 +8,9 @@
 class Decoy {
 public:
     Decoy();
+    ~Decoy();
 
-    void spawn(const sf::Vector2f& position, float duration, const sf::Vector2f& velocity = {0.f, 0.f});
+    void spawn(const sf::Vector2f& pos, float duration, const sf::Vector2f& velocity = {0.f, 0.f});
     void update(float dt, const Map& map);
     void draw(sf::RenderWindow& window) const;
 
@@ -18,11 +19,12 @@ public:
 
 private:
     sf::CircleShape shape_;
-    float timer_;
-    bool isActive_;
-
     sf::Vector2f velocity_;
-    bool isMoving_;
+    float lifetime_;
+    bool active_;
+
+    static sf::Texture texture_;
+    static bool textureLoaded_;
 };
 
 #endif

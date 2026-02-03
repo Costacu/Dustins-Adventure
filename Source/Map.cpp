@@ -11,6 +11,59 @@ Map::Map(sf::Vector2u windowSize)
     background_.setFillColor(sf::Color(70, 50, 30));
     globalButtonStates_.assign(4, false);
 
+    if (!shovelTexture_.loadFromFile("textures/Lopata.png") && !shovelTexture_.loadFromFile("../textures/Lopata.png")) {
+        std::cerr << "Eroare: Nu s-a putut incarca Lopata.png" << std::endl;
+    }
+    if (!wallTexture_.loadFromFile("textures/Wall.png") && !wallTexture_.loadFromFile("../textures/Wall.png")) {
+        std::cerr << "Eroare: Nu s-a putut incarca Wall.png" << std::endl;
+    }
+    if (!floorTexture_.loadFromFile("textures/Floor.png") && !floorTexture_.loadFromFile("../textures/Floor.png")) {
+        std::cerr << "Eroare: Nu s-a putut incarca Floor.png" << std::endl;
+    }
+    if (!portalTexture_.loadFromFile("textures/Portal.png") && !portalTexture_.loadFromFile("../textures/Portal.png")) {
+        std::cerr << "Eroare: Nu s-a putut incarca Portal.png" << std::endl;
+    }
+    if (!generatorTexture_.loadFromFile("textures/Generator.png") && !generatorTexture_.loadFromFile("../textures/Generator.png")) {
+        std::cerr << "Eroare: Nu s-a putut incarca Generator.png" << std::endl;
+    }
+    if (!doorTexture_.loadFromFile("textures/Door.png") && !doorTexture_.loadFromFile("../textures/Door.png")) {
+        std::cerr << "Eroare: Nu s-a putut incarca Door.png" << std::endl;
+    }
+    if (!closetTexture_.loadFromFile("textures/Closet.png") && !closetTexture_.loadFromFile("../textures/Closet.png")) {
+        std::cerr << "Eroare: Nu s-a putut incarca Closet.png" << std::endl;
+    }
+    if (!rubbleTexture_.loadFromFile("textures/Rubble.png") && !rubbleTexture_.loadFromFile("../textures/Rubble.png")) {
+        std::cerr << "Eroare: Nu s-a putut incarca Rubble.png" << std::endl;
+    }
+    if (!dustOverlayTexture_.loadFromFile("textures/UpsideDownDust.png") && !dustOverlayTexture_.loadFromFile("../textures/UpsideDownDust.png")) {
+        std::cerr << "Eroare: Nu s-a putut incarca UpsideDownDust.png" << std::endl;
+    }
+    if (!exitDoorTexture_.loadFromFile("textures/ExitDoor.png") && !exitDoorTexture_.loadFromFile("../textures/ExitDoor.png")) {
+        std::cerr << "Eroare: Nu s-a putut incarca ExitDoor.png" << std::endl;
+    }
+
+    bool genLoaded = false;
+    if (generatorBuffer_.loadFromFile("sounds/GeneratorStart.wav")) genLoaded = true;
+    else if (generatorBuffer_.loadFromFile("../sounds/GeneratorStart.wav")) genLoaded = true;
+    else if (generatorBuffer_.loadFromFile("GeneratorStart.wav")) genLoaded = true;
+
+    if (genLoaded) {
+        generatorSound_.setBuffer(generatorBuffer_);
+    } else {
+        std::cerr << "Nu s-a gasit 'GeneratorStart.wav'" << std::endl;
+    }
+
+    bool doorLoaded = false;
+    if (doorBuzzerBuffer_.loadFromFile("sounds/DoorBuzzer.wav")) doorLoaded = true;
+    else if (doorBuzzerBuffer_.loadFromFile("../sounds/DoorBuzzer.wav")) doorLoaded = true;
+    else if (doorBuzzerBuffer_.loadFromFile("DoorBuzzer.wav")) doorLoaded = true;
+
+    if (doorLoaded) {
+        doorBuzzerSound_.setBuffer(doorBuzzerBuffer_);
+    } else {
+        std::cerr << "Nu s-a gasit 'DoorBuzzer.mp3'!" << std::endl;
+    }
+
     std::vector<std::string> level1 = {
         "WWWWWWWWWWWWWTWWWWWWWWWWWW",
         "W.P......W...............W",
@@ -85,7 +138,7 @@ Map::Map(sf::Vector2u windowSize)
         "W.B........C...W.........W",
         "W.WWWW.WWWWWWW.W.W.WWWWW.W",
         "W..............W.W.....W.W",
-        "W.B............W.W.....W.W",
+        "W..............W.W.....W.W",
         "W......WWWWWWW.W.W.....W.W",
         "WWWWW.WWWWWWWWWWWWWWWWWW.W",
         "W........................W",
@@ -98,7 +151,7 @@ Map::Map(sf::Vector2u windowSize)
         "W.W.W.W.WWWWWWWWWW.W.W.W.W",
         "W.W.W.W.W..........W...W.W",
         "W.W.W.W.W.WWWWWWWW.WWWWW.W",
-        "W...W....................W",
+        "W...W..B.................W",
         "WWWWWWWWWWWWWTWWWWWWWWWWWW",
         "WWWWWWWWWWWWWWWWWWWWWWWWWW"
     };
@@ -115,6 +168,7 @@ Map::~Map() = default;
 
 void Map::buildMap() {
     walls_.clear();
+    floorTiles_.clear();
     transitionShapes_.clear();
     closets_.clear();
     closetVisited_.clear();
@@ -142,10 +196,17 @@ void Map::buildMap() {
             if (x + TILE > maxX) maxX = x + TILE;
             if (y + TILE > maxY) maxY = y + TILE;
 
+            if (tile != 'W') {
+                sf::RectangleShape f({TILE, TILE});
+                f.setPosition(x, y);
+                f.setTexture(&floorTexture_);
+                floorTiles_.push_back(f);
+            }
+
             if (tile == 'W') {
                 sf::RectangleShape w({TILE, TILE});
                 w.setPosition(x, y);
-                w.setFillColor(sf::Color(60, 60, 60));
+                w.setTexture(&wallTexture_);
                 walls_.push_back(w);
             }
             else if (tile == 'P') {
@@ -156,55 +217,69 @@ void Map::buildMap() {
             }
             else if (tile == 'D') {
                 winDoorShape_.setSize({TILE, TILE});
-                winDoorShape_.setFillColor(sf::Color::Red);
+                winDoorShape_.setTexture(&exitDoorTexture_);
                 winDoorShape_.setPosition(x, y);
                 winDoorBounds_ = winDoorShape_.getGlobalBounds();
             }
             else if (tile == 'C') {
                 sf::RectangleShape cShape({TILE, TILE});
                 cShape.setPosition(x, y);
-                cShape.setFillColor(sf::Color::Transparent);
-                cShape.setOutlineColor(sf::Color::White);
-                cShape.setOutlineThickness(2.f);
+                cShape.setTexture(&closetTexture_);
                 closets_.push_back(cShape);
                 closetVisited_.push_back(false);
             }
             else if (tile == 'T') {
                 sf::RectangleShape t({TILE, TILE});
                 t.setPosition(x, y);
-                t.setFillColor(sf::Color(0, 100, 255, 150));
+
+                if ((currentLevelIndex_ == 0 && c > 20) || (currentLevelIndex_ == 1 && c == 0)) {
+                    t.setTexture(&portalTexture_);
+
+                    sf::Vector2u pSz = portalTexture_.getSize();
+                    int partH = pSz.y / 3;
+                    int rowOffset = static_cast<int>(r) - 9;
+
+                    if (rowOffset >= 0 && rowOffset < 3) {
+                        t.setTextureRect(sf::IntRect(0, rowOffset * partH, pSz.x, partH));
+                    }
+                } else {
+                    t.setTexture(&doorTexture_);
+                }
+
                 transitionShapes_.push_back(t);
             }
             else if (tile == 'S') {
                 if (!shovelTaken_) {
-                    shovelShape_.setSize({TILE/2, TILE/2});
-                    shovelShape_.setFillColor(sf::Color::Cyan);
-                    shovelShape_.setOrigin(TILE/4, TILE/4);
-                    shovelShape_.setPosition(x + TILE/2, y + TILE/2);
+                    shovelShape_.setSize({TILE, TILE});
+                    shovelShape_.setTexture(&shovelTexture_);
+                    shovelShape_.setPosition(x, y);
                 }
             }
             else if (tile == 'R') {
+                sf::RectangleShape rShape({TILE, TILE});
+                rShape.setPosition(x, y);
+                rShape.setTexture(&rubbleTexture_);
+
                 if (currentLevelIndex_ == 2) {
                     if (rubbleCounter >= static_cast<int>(rubbleActive_.size())) {
                         rubbleActive_.push_back(true);
                     }
                     if (rubbleActive_[rubbleCounter]) {
-                        sf::RectangleShape rShape({TILE, TILE});
-                        rShape.setFillColor(sf::Color(100, 50, 0));
-                        rShape.setPosition(x, y);
                         rubbleShapes_.push_back(rShape);
                     }
                     rubbleCounter++;
                 } else {
-                    sf::RectangleShape rShape({TILE, TILE});
-                    rShape.setFillColor(sf::Color(100, 50, 0));
-                    rShape.setPosition(x, y);
                     rubbleShapes_.push_back(rShape);
                 }
             }
             else if (tile == 'G') {
                 generatorShape_.setSize({TILE, TILE});
-                generatorShape_.setFillColor(generatorOn_ ? sf::Color::Yellow : sf::Color::Magenta);
+                generatorShape_.setTexture(&generatorTexture_);
+                if (generatorOn_) {
+                    generatorShape_.setFillColor(sf::Color::White);
+                } else {
+                    generatorShape_.setFillColor(sf::Color(150, 150, 150));
+                }
                 generatorShape_.setPosition(x, y);
             }
             else if (tile == 'B') {
@@ -230,6 +305,9 @@ void Map::buildMap() {
     }
 
     background_.setSize(sf::Vector2f(maxX, maxY));
+    dustOverlayShape_.setSize(sf::Vector2f(maxX, maxY));
+    dustOverlayShape_.setTexture(&dustOverlayTexture_);
+    dustOverlayShape_.setPosition(0.f, 0.f);
 }
 
 void Map::loadLevel(int index) {
@@ -237,7 +315,7 @@ void Map::loadLevel(int index) {
         currentLevelIndex_ = index;
         grid_ = levels_[currentLevelIndex_];
         if (currentLevelIndex_ == 2 && rubbleActive_.empty()) {
-             rubbleActive_.assign(3, true);
+             rubbleActive_.assign(10, true);
         }
         buildMap();
     }
@@ -248,6 +326,7 @@ void Map::resetToFirstLevel() {
     generatorOn_ = false;
     globalButtonStates_.assign(4, false);
     rubbleActive_.clear();
+    doorSoundPlayed_ = false;
     loadLevel(0);
 }
 
@@ -292,10 +371,6 @@ bool Map::collidesWithWall(const sf::FloatRect& box, bool ignoreClosets) const {
 
     if (currentLevelIndex_ == 2 && box.intersects(generatorShape_.getGlobalBounds())) return true;
 
-    for (const auto& btn : currentLevelButtons_) {
-        if (box.intersects(btn.shape.getGlobalBounds())) return true;
-    }
-
     return false;
 }
 
@@ -318,14 +393,14 @@ sf::Vector2f Map::getEnemySpawn() const { return enemySpawn_; }
 sf::Vector2f Map::getTransitionSpawn() const { return {0.f, 0.f}; }
 
 void Map::draw(sf::RenderWindow& window) const {
-    window.draw(background_);
+    for (const auto& f : floorTiles_) window.draw(f);
     for (const auto& w : walls_) window.draw(w);
     for (const auto& c : closets_) window.draw(c);
 
     if (winDoorBounds_.width > 0) {
         sf::RectangleShape d = winDoorShape_;
-        if (generatorOn_ && checkButtonCondition()) d.setFillColor(sf::Color::Green);
-        else d.setFillColor(sf::Color::Red);
+        if (generatorOn_ && checkButtonCondition()) d.setFillColor(sf::Color::White);
+        else d.setFillColor(sf::Color(100, 100, 100));
         window.draw(d);
     }
 
@@ -341,6 +416,10 @@ void Map::draw(sf::RenderWindow& window) const {
         for (const auto& btn : currentLevelButtons_) {
             window.draw(btn.shape);
         }
+    }
+
+    if (currentLevelIndex_ == 1 || currentLevelIndex_ == 2) {
+        window.draw(dustOverlayShape_);
     }
 }
 
@@ -471,12 +550,25 @@ int Map::getIntersectingRubbleIndex(const sf::FloatRect& bounds) const {
 }
 
 bool Map::isGeneratorOn() const { return generatorOn_; }
-void Map::turnOnGenerator() { generatorOn_ = true; buildMap(); }
+void Map::turnOnGenerator() {
+    generatorOn_ = true;
+    generatorSound_.play();
+    checkDoorSound();
+    buildMap();
+}
 
 void Map::toggleButton(int id) {
     if (id >= 0 && id < 4) {
         globalButtonStates_[id] = !globalButtonStates_[id];
+        checkDoorSound();
         buildMap();
+    }
+}
+
+void Map::checkDoorSound() {
+    if (generatorOn_ && checkButtonCondition() && !doorSoundPlayed_) {
+        doorBuzzerSound_.play();
+        doorSoundPlayed_ = true;
     }
 }
 

@@ -52,13 +52,13 @@ private:
     sf::RectangleShape overlay_;
 
     std::vector<sf::CircleShape> decoyUI_;
+    sf::RectangleShape shovelUI_;
+
+    sf::Texture decoyTexture_;
+    sf::Texture shovelTextureUI_;
 
     sf::Clock clock_;
     float decoyLifetime_ = 9.0f;
-
-    bool isClearingRubble_ = false;
-    float rubbleTimer_ = 0.f;
-    int rubbleTargetIndex_ = -1;
 };
 
 #endif

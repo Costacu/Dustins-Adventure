@@ -23,6 +23,13 @@ GameEngine::GameEngine(unsigned int width, unsigned int height, const std::strin
     player_.setPosition(map_.getPlayerSpawn().x, map_.getPlayerSpawn().y);
     enemy_.setPosition(map_.getEnemySpawn().x, map_.getEnemySpawn().y);
 
+    if (!decoyTexture_.loadFromFile("textures/Budinca.png")) {
+        decoyTexture_.loadFromFile("../textures/Budinca.png");
+    }
+    if (!shovelTextureUI_.loadFromFile("textures/Lopata.png")) {
+        shovelTextureUI_.loadFromFile("../textures/Lopata.png");
+    }
+
     updateView();
     setupUI();
 }
@@ -42,10 +49,10 @@ void GameEngine::processEvents() {
     sf::Event e{};
     while (window_.pollEvent(e)) {
         if (e.type == sf::Event::MouseButtonPressed) {
-            if (e.mouseButton.button == sf::Mouse::Left && !gameOver_ && !isClearingRubble_) {
+            if (e.mouseButton.button == sf::Mouse::Left && !gameOver_) {
                 throwStaticDecoy();
             }
-            if (e.mouseButton.button == sf::Mouse::Right && !gameOver_ && !isClearingRubble_) {
+            if (e.mouseButton.button == sf::Mouse::Right && !gameOver_) {
                 throwProjectileDecoy();
             }
         }
@@ -65,8 +72,7 @@ void GameEngine::processEvents() {
                 }
             }
             if (e.key.code == sf::Keyboard::E) {
-                if (!isClearingRubble_)
-                    tryInteract();
+                tryInteract();
             }
         }
         if (e.type == sf::Event::Resized) {
@@ -100,16 +106,6 @@ void GameEngine::updateView() {
 
 void GameEngine::update(float dt) {
     if (gameOver_) return;
-
-    if (isClearingRubble_) {
-        rubbleTimer_ -= dt;
-        if (rubbleTimer_ <= 0.f) {
-            map_.clearRubble(rubbleTargetIndex_);
-            isClearingRubble_ = false;
-            rubbleTargetIndex_ = -1;
-        }
-        return;
-    }
 
     player_.update(dt);
     enemy_.update(dt);
@@ -177,18 +173,8 @@ void GameEngine::render() {
         window_.draw(decoyUI_[i]);
     }
 
-    if (isClearingRubble_) {
-        sf::Text txt;
-        txt.setFont(uiFont_);
-        txt.setString("Clearing...");
-        txt.setCharacterSize(40);
-        txt.setFillColor(sf::Color::Yellow);
-        txt.setOutlineColor(sf::Color::Black);
-        txt.setOutlineThickness(2.f);
-        sf::FloatRect b = txt.getLocalBounds();
-        txt.setOrigin(b.width/2.f, b.height/2.f);
-        txt.setPosition(window_.getSize().x/2.f, window_.getSize().y/2.f);
-        window_.draw(txt);
+    if (player_.hasShovel()) {
+        window_.draw(shovelUI_);
     }
 
     if (gameOver_) {
@@ -203,7 +189,6 @@ void GameEngine::render() {
 void GameEngine::reset() {
     gameOver_ = false;
     playerWon_ = false;
-    isClearingRubble_ = false;
 
     map_.resetToFirstLevel();
 
@@ -243,7 +228,7 @@ void GameEngine::checkWinCondition() {
         if (current == 0) {
             if (pCenter.y < 200.f) {
                 next = 3;
-                spawnPos = {mapSize.x / 2.f, mapSize.y - 220.f};
+                spawnPos = {mapSize.x / 2.f, mapSize.y - 200.f};
             } else {
                 next = 1;
                 spawnPos = {70.f, mapSize.y / 2.f};
@@ -252,7 +237,7 @@ void GameEngine::checkWinCondition() {
         else if (current == 1) {
             if (pCenter.y < 200.f) {
                 next = 2;
-                spawnPos = {mapSize.x / 2.f, mapSize.y - 220.f};
+                spawnPos = {mapSize.x / 2.f, mapSize.y - 200.f};
             }
             else {
                 next = 0;
@@ -265,7 +250,7 @@ void GameEngine::checkWinCondition() {
         }
         else if (current == 3) {
             next = 0;
-            spawnPos = {mapSize.x / 2.f, 220.f};
+            spawnPos = {mapSize.x / 2.f, 75.f};
         }
 
         map_.loadLevel(next);
@@ -305,20 +290,27 @@ void GameEngine::setupUI() {
     uiText_.setPosition(static_cast<float>(winSize.x) / 2.f, static_cast<float>(winSize.y) / 2.f);
 
     decoyUI_.clear();
-    float radius = 20.f;
+    float radius = 60.f;
     float gap = 10.f;
     float startX = winSize.x - 50.f;
-    float startY = 30.f;
+    float startY = 50.f;
 
     for (int i = 0; i < 5; ++i) {
         sf::CircleShape c(radius);
-        c.setFillColor(sf::Color(200, 200, 200));
+        c.setTexture(&decoyTexture_);
         c.setOutlineColor(sf::Color::Black);
         c.setOutlineThickness(2.f);
         c.setOrigin(radius, radius);
         c.setPosition(startX - i * (radius * 2 + gap), startY);
         decoyUI_.push_back(c);
     }
+
+    shovelUI_.setSize({140.f, 140.f});
+    shovelUI_.setTexture(&shovelTextureUI_);
+    shovelUI_.setOutlineColor(sf::Color::Black);
+    shovelUI_.setOutlineThickness(2.f);
+    shovelUI_.setOrigin(70.f, 70.f);
+    shovelUI_.setPosition(startX, startY + 200.f);
 }
 
 void GameEngine::updateOverlayText(const std::string& titleLine, const std::string& hintLine) {
@@ -417,14 +409,12 @@ void GameEngine::tryInteract() {
 
         if (player_.hasShovel()) {
              sf::FloatRect pRect = player_.getBounds();
-             pRect.left -= 10.f; pRect.top -= 10.f;
-             pRect.width += 20.f; pRect.height += 20.f;
+             pRect.left -= 40.f; pRect.top -= 40.f;
+             pRect.width += 80.f; pRect.height += 80.f;
 
              int idx = map_.getIntersectingRubbleIndex(pRect);
              if (idx != -1) {
-                 isClearingRubble_ = true;
-                 rubbleTimer_ = 1.0f;
-                 rubbleTargetIndex_ = idx;
+                 map_.clearRubble(idx);
                  return;
              }
         }
